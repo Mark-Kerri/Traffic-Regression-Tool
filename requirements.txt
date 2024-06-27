@@ -4,3 +4,7 @@ statsmodels
 scikit-learn
 openpyxl
 streamlit
+pylint
+mypy
+pydocstyle
+black
