@@ -1,5 +1,5 @@
 import streamlit as st
-from excel_editor import create_input_template
+from excel_editor import create_input_template  # pylint: disable=import-error
 
 
 def main():
