@@ -116,6 +116,10 @@ def create_input_template(name_variables, y_variables, x_variables, timeline_inp
         # Generate timeline
         timelines = generate_timeline(timeline_inputs)
 
+        # Insert columns before adding any timelines, maintaining styles from column G
+        num_columns = len(timelines["combined"])
+        insert_columns_with_style(ws, 7, num_columns)
+
         # Add variables
         last_row = add_variables_with_timeline(
             ws, y_variables, "Dependent Variables", 13, timelines
@@ -135,6 +139,21 @@ def create_input_template(name_variables, y_variables, x_variables, timeline_inp
         print(f"Error creating template: {e}")
 
 
+def insert_columns_with_style(ws, start_column, num_columns):
+    # Get the maximum row in the worksheet
+    max_row = ws.max_row
+
+    # Insert new columns
+    ws.insert_cols(start_column, num_columns)
+
+    # Copy styles from the original column G to the new columns
+    for row in range(1, max_row + 1):
+        source_cell = ws.cell(row=row, column=start_column + num_columns)
+        for col in range(start_column, start_column + num_columns):
+            target_cell = ws.cell(row=row, column=col)
+            copy_cell_style(source_cell, target_cell)
+
+
 def update_basic_info(ws, client_name, project_name, file_name):
     ws["B2"] = client_name
     ws["B3"] = project_name
@@ -148,11 +167,24 @@ def add_variables_with_timeline(ws, variables, header_text, start_row, timelines
 
     header_style = ws[HEADER_STYLE_CELL]
     value_style = ws[VALUE_STYLE_CELL]
+    year_step_style = ws["D12"]
 
     copy_cell_style(header_style, ws[f"D{start_row}"])
     copy_cell_style(header_style, ws[f"E{start_row}"])
 
-    # Add timeline headers
+    # Add year list
+    for col, value in enumerate(timelines["years"], start=7):
+        cell = ws.cell(row=start_row - 2, column=col)
+        cell.value = value
+        copy_cell_style(year_step_style, cell)
+
+    # Add step list
+    for col, value in enumerate(timelines["steps"], start=7):
+        cell = ws.cell(row=start_row - 1, column=col)
+        cell.value = value
+        copy_cell_style(year_step_style, cell)
+
+    # Add combined timeline headers
     for col, value in enumerate(timelines["combined"], start=7):
         cell = ws.cell(row=start_row, column=col)
         cell.value = value
