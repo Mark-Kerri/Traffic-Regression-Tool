@@ -163,3 +163,7 @@ cython_debug/
 
 # VSCode files folder
 .vscode/
+
+# Data files
+*.csv
+*.xlsx
