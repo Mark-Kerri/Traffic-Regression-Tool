@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from excel_editor import create_input_template  # pylint: disable=import-error
 
 
@@ -8,6 +7,13 @@ def initialize_session_state():
         st.session_state.y_vars = {}
     if "x_vars" not in st.session_state:
         st.session_state.x_vars = {}
+
+
+def delete_variable(var_type, var_name):
+    if var_type == "y":
+        del st.session_state.y_vars[var_name]
+    else:
+        del st.session_state.x_vars[var_name]
 
 
 def main():
@@ -25,36 +31,54 @@ def main():
     y_var_name = st.text_input("Dependent Variable Name", key="y_name")
     y_var_type = st.selectbox("Dependent Variable Type", ["abs", "pct"], key="y_type")
     if st.button("Add Dependent Variable"):
-        if y_var_name:  # Only add if name is not empty
+        if y_var_name and y_var_name not in st.session_state.y_vars:
             st.session_state.y_vars[y_var_name] = y_var_type
             st.success(f"Added dependent variable: {y_var_name}")
+        elif y_var_name in st.session_state.y_vars:
+            st.warning(f"Variable {y_var_name} already exists.")
+        else:
+            st.warning("Please enter a variable name.")
 
-    # Display current y variables
+    # Display current y variables with delete buttons
     if st.session_state.y_vars:
         st.write("Current Dependent Variables:")
-        st.write(
-            pd.DataFrame(
-                list(st.session_state.y_vars.items()), columns=["Variable", "Type"]
-            )
-        )
+        for var_name, var_type in st.session_state.y_vars.items():
+            col1, col2, col3 = st.columns([3, 1, 1])
+            with col1:
+                st.write(var_name)
+            with col2:
+                st.write(var_type)
+            with col3:
+                if st.button("Delete", key=f"del_y_{var_name}"):
+                    delete_variable("y", var_name)
+                    st.experimental_rerun()
 
     # Collect x variables
     st.header("Independent Variables")
     x_var_name = st.text_input("Independent Variable Name", key="x_name")
     x_var_type = st.selectbox("Independent Variable Type", ["abs", "pct"], key="x_type")
     if st.button("Add Independent Variable"):
-        if x_var_name:  # Only add if name is not empty
+        if x_var_name and x_var_name not in st.session_state.x_vars:
             st.session_state.x_vars[x_var_name] = x_var_type
             st.success(f"Added independent variable: {x_var_name}")
+        elif x_var_name in st.session_state.x_vars:
+            st.warning(f"Variable {x_var_name} already exists.")
+        else:
+            st.warning("Please enter a variable name.")
 
-    # Display current x variables
+    # Display current x variables with delete buttons
     if st.session_state.x_vars:
         st.write("Current Independent Variables:")
-        st.write(
-            pd.DataFrame(
-                list(st.session_state.x_vars.items()), columns=["Variable", "Type"]
-            )
-        )
+        for var_name, var_type in st.session_state.x_vars.items():
+            col1, col2, col3 = st.columns([3, 1, 1])
+            with col1:
+                st.write(var_name)
+            with col2:
+                st.write(var_type)
+            with col3:
+                if st.button("Delete", key=f"del_x_{var_name}"):
+                    delete_variable("x", var_name)
+                    st.experimental_rerun()
 
     # Collect timeline inputs
     st.header("Timeline Information")
