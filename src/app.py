@@ -1,6 +1,6 @@
 import streamlit as st
 from excel_editor import create_input_template  # pylint: disable=import-error
-import pandas as pd
+
 
 def initialize_session_state():
     if "y_vars" not in st.session_state:
@@ -14,12 +14,14 @@ def delete_variable(var_type, var_name):
         del st.session_state.y_vars[var_name]
     else:
         del st.session_state.x_vars[var_name]
+
+
 def main():
-    st.set_page_config(
-        page_title="Generate Excel Template file"
-    )
+    st.set_page_config(page_title="Generate Excel Template file")
     initialize_session_state()
-    st.sidebar.success("This page takes inputs from the user to generate an empty Excel Template file")
+    st.sidebar.success(
+        "This page takes inputs from the user to generate an empty Excel Template file"
+    )
 
     # Collect name variables
     st.header("Project Information")

@@ -1,7 +1,8 @@
 import os
 from copy import copy
-import openpyxl
 from calendar import month_abbr
+import openpyxl
+
 
 # Constants
 TEMPLATE_PATH = "data/utils/excel_template_v0.01.xlsx"
@@ -207,22 +208,22 @@ def add_variables_with_timeline(ws, variables, header_text, start_row, timelines
     return row
 
 
-if __name__ == "__main__":
-    name_variables = {"Client": "AEDL", "Project": "A32 LV Traffic Forecast"}
-    y_variables = {"Traffic (AADT)": "abs"}
-    x_variables = {
-        "GDP": "abs",
-        "Unemployment": "pct",
-        "Ramp Up": "abs",
-        "Signage": "abs",
-        "Cong_IC2": "abs",
-        "Cong_A20": "abs",
-    }
-    timeline_inputs = {
-        "Timestep": "Quarterly",
-        "Start Year": 2012,
-        "Start Timestep": 1,
-        "End Year": 2023,
-        "End Timestep": 4,
-    }
-    create_input_template(name_variables, y_variables, x_variables, timeline_inputs)
+# if __name__ == "__main__":
+#     name_variables = {"Client": "AEDL", "Project": "A32 LV Traffic Forecast"}
+#     y_variables = {"Traffic (AADT)": "abs"}
+#     x_variables = {
+#         "GDP": "abs",
+#         "Unemployment": "pct",
+#         "Ramp Up": "abs",
+#         "Signage": "abs",
+#         "Cong_IC2": "abs",
+#         "Cong_A20": "abs",
+#     }
+#     timeline_inputs = {
+#         "Timestep": "Quarterly",
+#         "Start Year": 2012,
+#         "Start Timestep": 1,
+#         "End Year": 2023,
+#         "End Timestep": 4,
+#     }
+#     create_input_template(name_variables, y_variables, x_variables, timeline_inputs)
