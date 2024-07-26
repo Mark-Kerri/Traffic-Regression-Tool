@@ -1,7 +1,8 @@
 import os
 from copy import copy
-import openpyxl
 from calendar import month_abbr
+import openpyxl
+
 
 # Constants
 TEMPLATE_PATH = "data/utils/excel_template_v0.01.xlsx"
@@ -101,7 +102,7 @@ def generate_timeline(timeline_inputs):
     return timelines
 
 
-def create_input_template(name_variables, y_variables, x_variables, timeline_inputs):
+def create_input_template(name_variables, y_variables, x_variables, timeline_inputs,file_name,output_folder_path):
     try:
         # Load the template workbook
         wb = openpyxl.load_workbook(TEMPLATE_PATH)
@@ -110,7 +111,8 @@ def create_input_template(name_variables, y_variables, x_variables, timeline_inp
         # Update basic information
         client_name = name_variables["Client"]
         project_name = name_variables["Project"]
-        file_name = f"{project_name} Regression Inputs"
+        # file_name = f"{project_name} Regression Inputs"
+
         update_basic_info(ws, client_name, project_name, file_name)
 
         # Generate timeline
@@ -129,7 +131,8 @@ def create_input_template(name_variables, y_variables, x_variables, timeline_inp
         )
 
         # Save the modified workbook
-        output_path = os.path.join(OUTPUT_DIR, f"{file_name}.xlsx")
+
+        output_path = os.path.join(output_folder_path, f"{file_name}.xlsx")
         wb.save(output_path)
         wb.close()
 
@@ -207,22 +210,22 @@ def add_variables_with_timeline(ws, variables, header_text, start_row, timelines
     return row
 
 
-if __name__ == "__main__":
-    name_variables = {"Client": "AEDL", "Project": "A32 LV Traffic Forecast"}
-    y_variables = {"Traffic (AADT)": "abs"}
-    x_variables = {
-        "GDP": "abs",
-        "Unemployment": "pct",
-        "Ramp Up": "abs",
-        "Signage": "abs",
-        "Cong_IC2": "abs",
-        "Cong_A20": "abs",
-    }
-    timeline_inputs = {
-        "Timestep": "Quarterly",
-        "Start Year": 2012,
-        "Start Timestep": 1,
-        "End Year": 2023,
-        "End Timestep": 4,
-    }
-    create_input_template(name_variables, y_variables, x_variables, timeline_inputs)
+# if __name__ == "__main__":
+#     name_variables = {"Client": "AEDL", "Project": "A32 LV Traffic Forecast"}
+#     y_variables = {"Traffic (AADT)": "abs"}
+#     x_variables = {
+#         "GDP": "abs",
+#         "Unemployment": "pct",
+#         "Ramp Up": "abs",
+#         "Signage": "abs",
+#         "Cong_IC2": "abs",
+#         "Cong_A20": "abs",
+#     }
+#     timeline_inputs = {
+#         "Timestep": "Quarterly",
+#         "Start Year": 2012,
+#         "Start Timestep": 1,
+#         "End Year": 2023,
+#         "End Timestep": 4,
+#     }
+#     create_input_template(name_variables, y_variables, x_variables, timeline_inputs)

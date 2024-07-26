@@ -1,5 +1,5 @@
 import streamlit as st
-from excel_editor import create_input_template  # pylint: disable=import-error
+from pages.utils.excel_editor import create_input_template  # pylint: disable=import-error
 
 
 def initialize_session_state():
@@ -7,7 +7,14 @@ def initialize_session_state():
         st.session_state.y_vars = {}
     if "x_vars" not in st.session_state:
         st.session_state.x_vars = {}
-
+    if 'slider_value' not in st.session_state:
+        st.session_state.slider_value = 0  # Default value
+    if 'export_file_path' not in st.session_state:
+        st.session_state.export_file_path = 'data/interim_output.csv'  # Default value
+    if 'df' not in st.session_state:
+        st.session_state.df = None
+    if 'df_index' not in st.session_state:
+        st.session_state.df_index = None
 
 def delete_variable(var_type, var_name):
     if var_type == "y":
@@ -17,9 +24,11 @@ def delete_variable(var_type, var_name):
 
 
 def main():
+    st.set_page_config(page_title="Generate Excel Template file")
     initialize_session_state()
-
-    st.title("Excel Template Generator")
+    st.sidebar.success(
+        "This page takes inputs from the user to generate an empty Excel Template file"
+    )
 
     # Collect name variables
     st.header("Project Information")
@@ -29,7 +38,7 @@ def main():
     # Collect y variables
     st.header("Dependent Variables")
     y_var_name = st.text_input("Dependent Variable Name", key="y_name")
-    y_var_type = st.selectbox("Dependent Variable Type", ["abs", "pct"], key="y_type")
+    y_var_type = st.selectbox("Dependent Variable Type", ["abs", "pct_change","pct_val_or_dummy"], key="y_type")
     if st.button("Add Dependent Variable"):
         if y_var_name and y_var_name not in st.session_state.y_vars:
             st.session_state.y_vars[y_var_name] = y_var_type
@@ -56,7 +65,7 @@ def main():
     # Collect x variables
     st.header("Independent Variables")
     x_var_name = st.text_input("Independent Variable Name", key="x_name")
-    x_var_type = st.selectbox("Independent Variable Type", ["abs", "pct"], key="x_type")
+    x_var_type = st.selectbox("Independent Variable Type", ["abs", "pct_change","pct_val_or_dummy"], key="x_type")
     if st.button("Add Independent Variable"):
         if x_var_name and x_var_name not in st.session_state.x_vars:
             st.session_state.x_vars[x_var_name] = x_var_type
@@ -105,6 +114,12 @@ def main():
         st.write(
             "For yearly timestep, start and end timesteps are automatically set to 1."
         )
+    output_folder_path = st.text_input(
+        "Enter the folder path where the output file will be saved (without quotes):"
+        )
+    file_name = st.text_input(
+        "Enter the file name (without quotes):"
+        , value=f"{project} Regression Inputs")
 
     # Create button to generate Excel
     if st.button("Generate Excel Template"):
@@ -123,6 +138,8 @@ def main():
                 st.session_state.y_vars,
                 st.session_state.x_vars,
                 timeline_inputs,
+                file_name,
+                output_folder_path
             )
             st.success("Excel template generated successfully!")
         except Exception as e:

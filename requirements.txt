@@ -8,3 +8,5 @@ pylint
 mypy
 pydocstyle
 black
+plotly
+matplotlib
