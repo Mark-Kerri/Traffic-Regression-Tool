@@ -1,6 +1,8 @@
 import os
 import openpyxl
 import pandas as pd
+import streamlit as st
+import plotly.express as px
 
 # Assumptions for the following script to work:
 # Column D only has values for dependent and independent variables
@@ -12,14 +14,17 @@ import pandas as pd
 # Building the index of the df assuming column G is empty (on all rows above data)
 # and column G is the first time series column
 
+def stringify(i:int = 0) -> str:
 
+    """This function allows the slider to have string values rather than just numbers"""
+    return st.session_state.df_index[i]
 def spreadsheet_to_df(file_name):
 
     # delete below line to test pathing
-    file_path = os.path.join("data", "reg_input")
-    file_name = "Development Test Data Regression Inputs.xlsx"
-    full_path = os.path.join(file_path, file_name)
-    workbook = openpyxl.load_workbook(full_path, data_only=True)
+    # file_path = os.path.join("data", "reg_input")
+    # file_name = "Development Test Data Regression Inputs.xlsx"
+    # full_path = os.path.join(file_path, file_name)
+    workbook = openpyxl.load_workbook(file_name, data_only=True)
     sheet = workbook.active
 
     # Read column names and row names so that the dataframe is filled
@@ -65,7 +70,7 @@ def spreadsheet_to_df(file_name):
     for row in range(1, sheet.max_row + 1):
         if sheet.cell(row=row, column=col).value is not None:
             start_row = row
-            print(start_row)
+            # print(start_row)
             break
     idx_row = start_row + 2  # 2 rows below first non-empty cell
 
@@ -81,4 +86,46 @@ def spreadsheet_to_df(file_name):
     df_idx = temp_list
     df.index = df_idx
 
-    return df
+    # Read variable type/unit and build a dictionary
+    var_dict = {}
+    col = 5  # Start at Column E
+    for row in range(1, sheet.max_row + 1):
+        if sheet.cell(row=row, column=col).value == 'abs/pct' or (sheet.cell(row=row, column=col).value is None):
+            continue
+        var_dict[sheet.cell(row=row, column=col-1).value] = sheet.cell(row=row, column=col).value
+    df_index = df.index
+
+    return df,df_index
+
+
+def visualise_data(df,slider_value = st.session_state.slider_value):
+    # print(f'df length : {len(df)}')
+    # print(f'slider_value : {slider_value}')
+    df = df[slider_value:]
+    # print(f'df length : {len(df)}')
+    df_idx = df.index
+    df_x = pd.DataFrame(index=df_idx)
+    df_y = pd.DataFrame(index=df_idx)
+
+    # split x and y columns into separate dfs
+    for col in df.columns:
+        if col[0] == "x":
+            df_x[col] = df[col]
+        elif col[0] == "y":
+            df_y[col] = df[col]
+    fig = px.line(df, x=df.index, y=df.columns,title="Interactive chart of each variable over time")
+    fig.update_layout(
+        xaxis_title="Year",
+        yaxis_title="Variable"
+    )
+    st.plotly_chart(fig)
+
+    df_indexed = 100 * (df / df.iloc[0, :])
+    fig = px.line(df_indexed, x=df_indexed.index, y=df_indexed.columns,
+                  title="Interactive chart of each variable indexed to base-100 over time")
+    fig.update_layout(
+        xaxis_title="Year",
+        yaxis_title="Indexed variable"
+    )
+    st.plotly_chart(fig)
+

@@ -102,7 +102,7 @@ def generate_timeline(timeline_inputs):
     return timelines
 
 
-def create_input_template(name_variables, y_variables, x_variables, timeline_inputs):
+def create_input_template(name_variables, y_variables, x_variables, timeline_inputs,file_name,output_folder_path):
     try:
         # Load the template workbook
         wb = openpyxl.load_workbook(TEMPLATE_PATH)
@@ -111,7 +111,8 @@ def create_input_template(name_variables, y_variables, x_variables, timeline_inp
         # Update basic information
         client_name = name_variables["Client"]
         project_name = name_variables["Project"]
-        file_name = f"{project_name} Regression Inputs"
+        # file_name = f"{project_name} Regression Inputs"
+
         update_basic_info(ws, client_name, project_name, file_name)
 
         # Generate timeline
@@ -130,7 +131,8 @@ def create_input_template(name_variables, y_variables, x_variables, timeline_inp
         )
 
         # Save the modified workbook
-        output_path = os.path.join(OUTPUT_DIR, f"{file_name}.xlsx")
+
+        output_path = os.path.join(output_folder_path, f"{file_name}.xlsx")
         wb.save(output_path)
         wb.close()
 
