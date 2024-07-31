@@ -15,7 +15,7 @@ import plotly.express as px
 # and column G is the first time series column
 
 def stringify(i:int = 0) -> str:
-
+    # print(f'stringify prints {i}')
     """This function allows the slider to have string values rather than just numbers"""
     return st.session_state.df_index[i]
 def spreadsheet_to_df(file_name):
@@ -95,14 +95,23 @@ def spreadsheet_to_df(file_name):
         var_dict[sheet.cell(row=row, column=col-1).value] = sheet.cell(row=row, column=col).value
     df_index = df.index
 
-    return df,df_index
+    return df,df_index,var_dict
 
 
-def visualise_data(df,slider_value = st.session_state.slider_value):
+def visualise_data(df, slider_value_start,slider_value_end):
+#= st.session_state.slider_value_start,
+#                    = st.session_state.slider_value_end):
     # print(f'df length : {len(df)}')
     # print(f'slider_value : {slider_value}')
-    df = df[slider_value:]
-    # print(f'df length : {len(df)}')
+    print(f'start value: {slider_value_start}, {stringify(slider_value_start)}')
+    print(f'end value: {slider_value_end}, {stringify(slider_value_end)}')
+
+    df = df[slider_value_start:slider_value_end+1]
+    # df = df[:]
+    print(slider_value_start)
+    print(slider_value_end)
+
+# print(f'df length : {len(df)}')
     df_idx = df.index
     df_x = pd.DataFrame(index=df_idx)
     df_y = pd.DataFrame(index=df_idx)
@@ -129,3 +138,46 @@ def visualise_data(df,slider_value = st.session_state.slider_value):
     )
     st.plotly_chart(fig)
 
+def growth_df(df):
+    # 4 for quarterly data
+    prd = 4
+    print(df.columns)
+    print(st.session_state.var_dict)
+    #identify columns of each type
+    for df_col in df.columns:
+        if st.session_state.var_dict[df_col[2:]] == 'abs':
+            # df['g: ' + df_col] = df[df_col].pct_change(periods=4) * 100
+            df['g: ' + df_col] = df[df_col].pct_change(periods=prd) * 100 # different forms of this produce
+            # same coefficient but different constant (e.g. pct_change + 1, or pct_change * 100, or pct_change only
+        if st.session_state.var_dict[df_col[2:]] == 'pct_val_or_dummy':
+            df['g: ' + df_col] = (df[df_col] - df[df_col].shift(1))/df[df_col].shift(1)
+            #(prices - prices.shift(1))/prices.shift(1)
+        # e.g. real toll change:
+        if st.session_state.var_dict[df_col[2:]] == 'pct_change':
+            df['g: ' + df_col] = df[df_col].pct_change(periods=prd) * 100
+
+
+        g_cols = [c for c in df.columns if c[0:2]=='g:]
+        # print(g_cols)
+        g_df = df[g_cols].dropna(how='all')
+    return g_df
+def growth_list(elements):
+    return [f"g: {element}" for element in elements]
+def show_df(df,x_sel,y_sel):
+    # def quarter_to_datetime(quarter_str):
+    #     year, quarter = quarter_str.split(' Q')
+    #     month = (int(quarter) - 1) * 3 + 1  # January for Q1, April for Q2, etc.
+    #     return pd.Timestamp(f"{year}-{month:02d}-01")
+    # print('x_sel: ',x_sel)
+    # print('y_sel: ',y_sel,'/n')
+    filt_cols = []
+    filt_cols.append(y_sel)
+    for x in x_sel:
+        filt_cols.append(x)
+
+    st.dataframe(data=st.session_state.df[st.session_state.slider_value_start:st.session_state.slider_value_end][filt_cols])
+    # df['date'] = df.index.map(quarter_to_datetime)
+
+
+    # df['annual_growth'] = df.groupby(df['date'].dt.quarter)['traffic'].pct_change(periods=4) * 100
+    # print(g_df.head())

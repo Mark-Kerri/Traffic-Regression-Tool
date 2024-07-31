@@ -7,15 +7,24 @@ def initialize_session_state():
         st.session_state.y_vars = {}
     if "x_vars" not in st.session_state:
         st.session_state.x_vars = {}
-    if 'slider_value' not in st.session_state:
-        st.session_state.slider_value = 0  # Default value
+    if 'slider_value_start' not in st.session_state:
+        st.session_state.slider_value_start = 0  # Default value
+    if 'slider_value_end' not in st.session_state:
+        st.session_state.slider_value_end = -1  # Default value
     if 'export_file_path' not in st.session_state:
-        st.session_state.export_file_path = 'data/interim_output.csv'  # Default value
+        st.session_state.export_file_path = 'outputs/interim_df_output.csv'  # Default value
     if 'df' not in st.session_state:
         st.session_state.df = None
     if 'df_index' not in st.session_state:
         st.session_state.df_index = None
-
+    if 'var_dict' not in st.session_state:
+        st.session_state.var_dict = {}
+    if "y_sel" not in st.session_state:
+        st.session_state.y_sel = []
+    if "x_sel" not in st.session_state:
+        st.session_state.x_sel = []
+    if 'g_df' not in st.session_state:
+        st.session_state.g_df = None
 def delete_variable(var_type, var_name):
     if var_type == "y":
         del st.session_state.y_vars[var_name]
