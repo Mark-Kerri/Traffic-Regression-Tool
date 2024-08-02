@@ -3,7 +3,7 @@ import openpyxl
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-
+import numpy as np
 # Assumptions for the following script to work:
 # Column D only has values for dependent and independent variables
 # and no other content (otherwise any column D text will be assumed a new variable)
@@ -18,6 +18,12 @@ def stringify(i:int = 0) -> str:
     # print(f'stringify prints {i}')
     """This function allows the slider to have string values rather than just numbers"""
     return st.session_state.df_index[i]
+
+def stringify_g_df(i:int = 0) -> str:
+    # print(f'stringify prints {i}')
+    """This function allows the slider to have string values rather than just numbers"""
+    # print(st.session_state.g_df_idx)
+    return st.session_state.g_df_idx[i]
 def spreadsheet_to_df(file_name):
 
     # delete below line to test pathing
@@ -76,6 +82,7 @@ def spreadsheet_to_df(file_name):
 
     temp_list = []
     cell_names = sheet[idx_row]
+    # print(cell_names)
     for cell_obj in cell_names[(col - 1) :]:
         try:
             val = str(cell_obj.value)
@@ -146,21 +153,22 @@ def growth_df(df):
     #identify columns of each type
     for df_col in df.columns:
         if st.session_state.var_dict[df_col[2:]] == 'abs':
-            # df['g: ' + df_col] = df[df_col].pct_change(periods=4) * 100
-            df['g: ' + df_col] = df[df_col].pct_change(periods=prd) * 100 # different forms of this produce
+            df['g: ' + df_col] = df[df_col].pct_change(periods=prd)+1 # different forms of this produce
             # same coefficient but different constant (e.g. pct_change + 1, or pct_change * 100, or pct_change only
         if st.session_state.var_dict[df_col[2:]] == 'pct_val_or_dummy':
-            df['g: ' + df_col] = (df[df_col] - df[df_col].shift(1))/df[df_col].shift(1)
-            #(prices - prices.shift(1))/prices.shift(1)
+            df['g: ' + df_col] = np.exp(df[df_col] - df[df_col].shift(prd))
         # e.g. real toll change:
         if st.session_state.var_dict[df_col[2:]] == 'pct_change':
-            df['g: ' + df_col] = df[df_col].pct_change(periods=prd) * 100
+            df['g: ' + df_col] = df[df_col] + 1
 
 
-        g_cols = [c for c in df.columns if c[0:2]=='g:]
+        g_cols = [c for c in df.columns if c[0:2]=='g:']
         # print(g_cols)
         g_df = df[g_cols].dropna(how='all')
-    return g_df
+        g_df_idx = g_df.index
+        print('g_df_idx:', g_df.index)
+
+    return g_df,g_df_idx
 def growth_list(elements):
     return [f"g: {element}" for element in elements]
 def show_df(df,x_sel,y_sel):
@@ -175,7 +183,7 @@ def show_df(df,x_sel,y_sel):
     for x in x_sel:
         filt_cols.append(x)
 
-    st.dataframe(data=st.session_state.df[st.session_state.slider_value_start:st.session_state.slider_value_end][filt_cols])
+    st.dataframe(data=st.session_state.df[st.session_state.slider_value_start:st.session_state.slider_value_end+1][filt_cols])
     # df['date'] = df.index.map(quarter_to_datetime)
 
 

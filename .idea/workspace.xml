@@ -5,11 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="14abbf4e-b44d-4ffd-8d52-2d0e6f6668ef" name="Changes" comment="Added process_spreadsheet_data as a separate streamlit page, added time series index in process_inputs.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot">
-      <change afterPath="$PROJECT_DIR$/src/pages/3_regression_on_growth.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pages/3_Backcast.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/1_process_spreadsheet_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/1_process_spreadsheet_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/2_data_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/2_data_analysis.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data/reg_input/Development Test Data Regression Inputs.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/data/reg_input/Development Test Data Regression Inputs.xlsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/1_process_spreadsheet_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/1_Read_Inputs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/2_data_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/discontinued_script_for_regression_on_raw_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pages/3_regression_on_growth.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/2_Regression.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/pages/utils/process_inputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/utils/process_inputs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -59,7 +61,7 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.process_inputs">
-    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="App" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Traffic-Regression-Tool" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -71,7 +73,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/app.py" />
+      <option name="SCRIPT_NAME" value="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\App.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -125,7 +127,7 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.process_inputs" />
-        <item itemvalue="Python.app" />
+        <item itemvalue="Python.App" />
         <item itemvalue="Python.excel_editor" />
       </list>
     </recent_temporary>

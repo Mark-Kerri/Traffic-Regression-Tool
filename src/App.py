@@ -17,14 +17,30 @@ def initialize_session_state():
         st.session_state.df = None
     if 'df_index' not in st.session_state:
         st.session_state.df_index = None
+    if 'g_df_idx' not in st.session_state:
+        st.session_state.g_df_idx = None
     if 'var_dict' not in st.session_state:
         st.session_state.var_dict = {}
+    if 'prd_dict' not in st.session_state:
+        st.session_state.prd_dict = {'Monthly':12,'Quarterly':4,'Yearly':12}
     if "y_sel" not in st.session_state:
         st.session_state.y_sel = []
     if "x_sel" not in st.session_state:
         st.session_state.x_sel = []
+    if "y_sel_g" not in st.session_state:
+        st.session_state.y_sel_g = []
+    if "x_sel_g" not in st.session_state:
+        st.session_state.x_sel_g = []
     if 'g_df' not in st.session_state:
         st.session_state.g_df = None
+    if 'r_df' not in st.session_state:
+        st.session_state.r_df = None
+    if 'bc_df' not in st.session_state:
+        st.session_state.bc_df = None
+    if 'bc_plot_df' not in st.session_state:
+        st.session_state.bc_plot_df = None
+    if 'model_params' not in st.session_state:
+        st.session_state.model_params = []
 def delete_variable(var_type, var_name):
     if var_type == "y":
         del st.session_state.y_vars[var_name]
@@ -153,7 +169,7 @@ def main():
             st.success("Excel template generated successfully!")
         except Exception as e:
             st.error(f"An error occurred: {str(e)}")
-
+    # st.session_state.prd_dict = {}
 
 if __name__ == "__main__":
     main()
