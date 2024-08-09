@@ -102,7 +102,14 @@ def generate_timeline(timeline_inputs):
     return timelines
 
 
-def create_input_template(name_variables, y_variables, x_variables, timeline_inputs,file_name,output_folder_path):
+def create_input_template(
+    name_variables,
+    y_variables,
+    x_variables,
+    timeline_inputs,
+    file_name,
+    output_folder_path,
+):
     try:
         # Load the template workbook
         wb = openpyxl.load_workbook(TEMPLATE_PATH)
@@ -208,24 +215,3 @@ def add_variables_with_timeline(ws, variables, header_text, start_row, timelines
             copy_cell_style(value_style, cell)
 
     return row
-
-
-# if __name__ == "__main__":
-#     name_variables = {"Client": "AEDL", "Project": "A32 LV Traffic Forecast"}
-#     y_variables = {"Traffic (AADT)": "abs"}
-#     x_variables = {
-#         "GDP": "abs",
-#         "Unemployment": "pct",
-#         "Ramp Up": "abs",
-#         "Signage": "abs",
-#         "Cong_IC2": "abs",
-#         "Cong_A20": "abs",
-#     }
-#     timeline_inputs = {
-#         "Timestep": "Quarterly",
-#         "Start Year": 2012,
-#         "Start Timestep": 1,
-#         "End Year": 2023,
-#         "End Timestep": 4,
-#     }
-#     create_input_template(name_variables, y_variables, x_variables, timeline_inputs)

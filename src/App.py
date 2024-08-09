@@ -1,28 +1,65 @@
+"""
+Regression Analysis Tool.
+
+This module implements a Streamlit-based web application designed to streamline the process of
+running multivariate regression analysis on timeseries data. The tool allows analysts to define
+multiple dependent and independent variables, visualise data, review initial regression results,
+and evaluate the model's predictive power.
+
+Key Features:
+- **Excel Template Creation**: Generate an Excel input template to ensure the data is structured
+  correctly for analysis.
+- **Data Exploration**: Load and explore data from the Excel template to gain initial insights
+  before running regression analysis.
+- **Regression Parameter Definition**: Specify and adjust the parameters for the regression model,
+  and review the initial analysis results.
+- **Model Evaluation**: Evaluate how well the regression model predicts historical data and
+  fine-tune elasticities as needed.
+- **Output Curation**: Curate and export the desired outputs for further analysis and reporting.
+
+The application consists of multiple subpages, each dedicated to a specific stage in the regression
+analysis process. The page structure is designed to guide the user through the entire workflow from
+data input to output curation.
+
+Module Functions:
+- `initialise_session_state()`: Initialises all session state variables required for the app's
+  functionality.
+- `main()`: The main function that initialises the app interface, including titles and introductory
+  markdown.
+
+Usage:
+This module is meant to be executed as a standalone Streamlit application. When run, it will open a
+web interface that guides users through the regression analysis process step-by-step.
+
+"""
+
 import streamlit as st
-from pages.utils.excel_editor import create_input_template  # pylint: disable=import-error
 
 
-def initialize_session_state():
+def initialise_session_state():
+    """Initialise session state variables for managing data and app configurations."""
     if "y_vars" not in st.session_state:
         st.session_state.y_vars = {}
     if "x_vars" not in st.session_state:
         st.session_state.x_vars = {}
-    if 'slider_value_start' not in st.session_state:
+    if "slider_value_start" not in st.session_state:
         st.session_state.slider_value_start = 0  # Default value
-    if 'slider_value_end' not in st.session_state:
+    if "slider_value_end" not in st.session_state:
         st.session_state.slider_value_end = -1  # Default value
-    if 'export_file_path' not in st.session_state:
-        st.session_state.export_file_path = 'outputs/interim_df_output.csv'  # Default value
-    if 'df' not in st.session_state:
+    if "export_file_path" not in st.session_state:
+        st.session_state.export_file_path = (
+            "outputs/interim_df_output.csv"  # Default value
+        )
+    if "df" not in st.session_state:
         st.session_state.df = None
-    if 'df_index' not in st.session_state:
+    if "df_index" not in st.session_state:
         st.session_state.df_index = None
-    if 'g_df_idx' not in st.session_state:
+    if "g_df_idx" not in st.session_state:
         st.session_state.g_df_idx = None
-    if 'var_dict' not in st.session_state:
+    if "var_dict" not in st.session_state:
         st.session_state.var_dict = {}
-    if 'prd_dict' not in st.session_state:
-        st.session_state.prd_dict = {'Monthly':12,'Quarterly':4,'Yearly':12}
+    if "prd_dict" not in st.session_state:
+        st.session_state.prd_dict = {"Monthly": 12, "Quarterly": 4, "Yearly": 12}
     if "y_sel" not in st.session_state:
         st.session_state.y_sel = []
     if "x_sel" not in st.session_state:
@@ -31,145 +68,51 @@ def initialize_session_state():
         st.session_state.y_sel_g = []
     if "x_sel_g" not in st.session_state:
         st.session_state.x_sel_g = []
-    if 'g_df' not in st.session_state:
+    if "g_df" not in st.session_state:
         st.session_state.g_df = None
-    if 'r_df' not in st.session_state:
+    if "r_df" not in st.session_state:
         st.session_state.r_df = None
-    if 'bc_df' not in st.session_state:
+    if "bc_df" not in st.session_state:
         st.session_state.bc_df = None
-    if 'bc_plot_df' not in st.session_state:
+    if "bc_plot_df" not in st.session_state:
         st.session_state.bc_plot_df = None
-    if 'model_params' not in st.session_state:
+    if "model_params" not in st.session_state:
         st.session_state.model_params = []
-def delete_variable(var_type, var_name):
-    if var_type == "y":
-        del st.session_state.y_vars[var_name]
-    else:
-        del st.session_state.x_vars[var_name]
 
 
 def main():
-    st.set_page_config(page_title="Generate Excel Template file")
-    initialize_session_state()
-    st.sidebar.success(
-        "This page takes inputs from the user to generate an empty Excel Template file"
+    """Run main function to render the Streamlit app interface."""
+    initialise_session_state()
+
+    introduction = st.Page(
+        "subpages/introduction.py",
+        title="Introduction",
+        icon=":material/home:",
+        default=True,
     )
-
-    # Collect name variables
-    st.header("Project Information")
-    client = st.text_input("Client Name")
-    project = st.text_input("Project Name")
-
-    # Collect y variables
-    st.header("Dependent Variables")
-    y_var_name = st.text_input("Dependent Variable Name", key="y_name")
-    y_var_type = st.selectbox("Dependent Variable Type", ["abs", "pct_change","pct_val_or_dummy"], key="y_type")
-    if st.button("Add Dependent Variable"):
-        if y_var_name and y_var_name not in st.session_state.y_vars:
-            st.session_state.y_vars[y_var_name] = y_var_type
-            st.success(f"Added dependent variable: {y_var_name}")
-        elif y_var_name in st.session_state.y_vars:
-            st.warning(f"Variable {y_var_name} already exists.")
-        else:
-            st.warning("Please enter a variable name.")
-
-    # Display current y variables with delete buttons
-    if st.session_state.y_vars:
-        st.write("Current Dependent Variables:")
-        for var_name, var_type in st.session_state.y_vars.items():
-            col1, col2, col3 = st.columns([3, 1, 1])
-            with col1:
-                st.write(var_name)
-            with col2:
-                st.write(var_type)
-            with col3:
-                if st.button("Delete", key=f"del_y_{var_name}"):
-                    delete_variable("y", var_name)
-                    st.experimental_rerun()
-
-    # Collect x variables
-    st.header("Independent Variables")
-    x_var_name = st.text_input("Independent Variable Name", key="x_name")
-    x_var_type = st.selectbox("Independent Variable Type", ["abs", "pct_change","pct_val_or_dummy"], key="x_type")
-    if st.button("Add Independent Variable"):
-        if x_var_name and x_var_name not in st.session_state.x_vars:
-            st.session_state.x_vars[x_var_name] = x_var_type
-            st.success(f"Added independent variable: {x_var_name}")
-        elif x_var_name in st.session_state.x_vars:
-            st.warning(f"Variable {x_var_name} already exists.")
-        else:
-            st.warning("Please enter a variable name.")
-
-    # Display current x variables with delete buttons
-    if st.session_state.x_vars:
-        st.write("Current Independent Variables:")
-        for var_name, var_type in st.session_state.x_vars.items():
-            col1, col2, col3 = st.columns([3, 1, 1])
-            with col1:
-                st.write(var_name)
-            with col2:
-                st.write(var_type)
-            with col3:
-                if st.button("Delete", key=f"del_x_{var_name}"):
-                    delete_variable("x", var_name)
-                    st.experimental_rerun()
-
-    # Collect timeline inputs
-    st.header("Timeline Information")
-    timestep = st.selectbox("Timestep", ["Monthly", "Quarterly", "Yearly"])
-    start_year = st.number_input(
-        "Start Year", min_value=1900, max_value=2100, value=2012
+    input_template = st.Page(
+        "subpages/create_input_template.py",
+        title="Create Input Template",
+        icon=":material/edit_document:",
     )
-    end_year = st.number_input("End Year", min_value=1900, max_value=2100, value=2023)
+    read_inputs = st.Page(
+        "subpages/read_inputs.py", title="Data Exploration", icon=":material/analytics:"
+    )
+    regression = st.Page(
+        "subpages/regression.py",
+        title="Define Regression Parameters",
+        icon=":material/stacked_line_chart:",
+    )
+    backcast = st.Page(
+        "subpages/backcast.py", title="Model Evaluation", icon=":material/troubleshoot:"
+    )
+    outputs = st.Page("subpages/outputs.py", title="Outputs", icon=":material/output:")
 
-    # Adjust start_timestep and end_timestep based on timestep
-    if timestep == "Monthly":
-        start_timestep = st.number_input(
-            "Start Month", min_value=1, max_value=12, value=1
-        )
-        end_timestep = st.number_input("End Month", min_value=1, max_value=12, value=12)
-    elif timestep == "Quarterly":
-        start_timestep = st.number_input(
-            "Start Quarter", min_value=1, max_value=4, value=1
-        )
-        end_timestep = st.number_input("End Quarter", min_value=1, max_value=4, value=4)
-    else:  # Yearly
-        start_timestep = 1
-        end_timestep = 1
-        st.write(
-            "For yearly timestep, start and end timesteps are automatically set to 1."
-        )
-    output_folder_path = st.text_input(
-        "Enter the folder path where the output file will be saved (without quotes):"
-        )
-    file_name = st.text_input(
-        "Enter the file name (without quotes):"
-        , value=f"{project} Regression Inputs")
+    pg = st.navigation(
+        [introduction, input_template, read_inputs, regression, backcast, outputs]
+    )
+    pg.run()
 
-    # Create button to generate Excel
-    if st.button("Generate Excel Template"):
-        name_variables = {"Client": client, "Project": project}
-        timeline_inputs = {
-            "Timestep": timestep,
-            "Start Year": start_year,
-            "Start Timestep": start_timestep,
-            "End Year": end_year,
-            "End Timestep": end_timestep,
-        }
-
-        try:
-            create_input_template(
-                name_variables,
-                st.session_state.y_vars,
-                st.session_state.x_vars,
-                timeline_inputs,
-                file_name,
-                output_folder_path
-            )
-            st.success("Excel template generated successfully!")
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
-    # st.session_state.prd_dict = {}
 
 if __name__ == "__main__":
     main()
