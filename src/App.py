@@ -42,6 +42,8 @@ def initialise_session_state():
         st.session_state.y_vars = {}
     if "x_vars" not in st.session_state:
         st.session_state.x_vars = {}
+    if "inputs_file_path" not in st.session_state:
+        st.session_state.inputs_file_path = None
     if "slider_value_start" not in st.session_state:
         st.session_state.slider_value_start = 0  # Default value
     if "slider_value_end" not in st.session_state:

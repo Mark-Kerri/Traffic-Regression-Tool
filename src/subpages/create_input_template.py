@@ -1,9 +1,35 @@
+"""
+Excel Template Generator for Regression Analysis.
+
+This Streamlit module provides an interface for users to create an Excel template
+for regression analysis. Users can define dependent and independent variables,
+set project and timeline details, and then generate an Excel file for data input.
+
+The main functions include:
+- Collecting user inputs for project details, variables, and timeline information.
+- Validating the output folder path and generating the Excel template.
+- Displaying current variables and allowing the user to delete any unwanted variables.
+
+Modules:
+- pathlib: Used for handling filesystem paths.
+- streamlit: Streamlit library to create the web-based user interface.
+- subpages.utils.excel: Custom utility module to generate the Excel template.
+
+"""
+
 from pathlib import Path
 import streamlit as st
 from subpages.utils.excel import create_input_template  # pylint: disable=import-error
 
 
 def delete_x_y_variable(var_type, var_name):
+    """
+    Delete a dependent or independent variable from session state.
+
+    Parameters:
+    - var_type (str): Type of the variable, either 'x' for independent or 'y' for dependent.
+    - var_name (str): The name of the variable to be deleted.
+    """
     if var_type == "y":
         del st.session_state.y_vars[var_name]
     else:
@@ -11,17 +37,24 @@ def delete_x_y_variable(var_type, var_name):
 
 
 def main():
-    st.set_page_config(page_title="Generate Excel Template file")
+    """
+    Run main function to render the Streamlit app interface.
+
+    This function sets up the Streamlit UI, collects user inputs for the project,
+    dependent and independent variables, timeline information, and allows the user
+    to generate an Excel template file for regression analysis. The function also
+    includes input validation and error handling to ensure correct execution.
+    """
     st.sidebar.success(
         "This page takes inputs from the user to generate an empty Excel Template file"
     )
 
-    # Collect name variables
+    # Collect project information
     st.header("Project Information")
     client = st.text_input("Client Name")
     project = st.text_input("Project Name")
 
-    # Collect y variables
+    # Collect dependent variables (Y variables)
     st.header("Dependent Variables")
     y_var_name = st.text_input("Dependent Variable Name", key="y_name")
     y_var_type = st.selectbox(
@@ -38,7 +71,7 @@ def main():
         else:
             st.warning("Please enter a variable name.")
 
-    # Display current y variables with delete buttons
+    # Display current dependent variables with delete buttons
     if st.session_state.y_vars:
         st.write("Current Dependent Variables:")
         for var_name, var_type in st.session_state.y_vars.items():
@@ -50,9 +83,9 @@ def main():
             with col3:
                 if st.button("Delete", key=f"del_y_{var_name}"):
                     delete_x_y_variable("y", var_name)
-                    st.experimental_rerun()
+                    st.rerun()
 
-    # Collect x variables
+    # Collect independent variables (X variables)
     st.header("Independent Variables")
     x_var_name = st.text_input("Independent Variable Name", key="x_name")
     x_var_type = st.selectbox(
@@ -69,7 +102,7 @@ def main():
         else:
             st.warning("Please enter a variable name.")
 
-    # Display current x variables with delete buttons
+    # Display current independent variables with delete buttons
     if st.session_state.x_vars:
         st.write("Current Independent Variables:")
         for var_name, var_type in st.session_state.x_vars.items():
@@ -81,7 +114,7 @@ def main():
             with col3:
                 if st.button("Delete", key=f"del_x_{var_name}"):
                     delete_x_y_variable("x", var_name)
-                    st.experimental_rerun()
+                    st.rerun()
 
     # Collect timeline inputs
     st.header("Timeline Information")
@@ -108,6 +141,8 @@ def main():
         st.write(
             "For yearly timestep, start and end timesteps are automatically set to 1."
         )
+
+    # Collect output file path and name
     output_folder_path = st.text_input(
         "Enter the folder path where the output file will be saved (without quotes):"
     )
@@ -115,7 +150,7 @@ def main():
         "Enter the file name (without quotes):", value=f"{project} Regression Inputs"
     )
 
-    # Create button to generate Excel
+    # Button to generate Excel template
     if st.button("Generate Excel Template"):
         name_variables = {"Client": client, "Project": project}
         timeline_inputs = {
@@ -146,6 +181,8 @@ def main():
                 output_folder_path,
             )
             st.success("Excel template generated successfully!")
+            inputs_file_path = output_folder / f"{file_name}.xlsx"
+            st.session_state.inputs_file_path = inputs_file_path
 
         except FileNotFoundError as fnf_error:
             st.error(f"File not found error: {fnf_error}")
@@ -158,6 +195,10 @@ def main():
                 f"Permission error: {perm_error}. "
                 "Check if you have the right permissions for the output directory."
             )
+
+    # Button to switch page to next step
+    if st.button("Load Completed Template Data"):
+        st.switch_page("subpages/read_inputs.py")
 
 
 if __name__ == "__page__":
