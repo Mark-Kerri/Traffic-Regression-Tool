@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-from subpages.utils.process_inputs import stringify, show_df
+from subpages.utils.process_inputs import stringify, create_and_show_df
 from subpages.utils.process_inputs import visualise_data
 import plotly.express as px
 

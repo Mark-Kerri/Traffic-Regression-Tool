@@ -3,7 +3,7 @@ import streamlit as st
 import statsmodels.api as sm
 from subpages.utils.process_inputs import (
     growth_df,
-    show_df,
+    create_and_show_df,
 )  # pylint: disable=import-error
 from subpages.utils.process_inputs import visualise_data
 from subpages.utils.process_inputs import stringify, stringify_g_df

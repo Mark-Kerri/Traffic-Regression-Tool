@@ -197,7 +197,7 @@ def main():
             )
 
     # Button to switch page to next step
-    if st.button("Load Completed Template Data"):
+    if st.button("Next Page"):
         st.switch_page("subpages/read_inputs.py")
 
 
