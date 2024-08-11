@@ -1,5 +1,5 @@
 """
-Module for data exploration in a Streamlit application.
+Module for data exploration in the Streamlit application.
 
 This module provides functionality for uploading, filtering, and visualizing data
 using Streamlit. It allows users to select variables, filter timelines, and preview
