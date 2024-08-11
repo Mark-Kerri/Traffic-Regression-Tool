@@ -1,8 +1,7 @@
 import pandas as pd
 import streamlit as st
-from subpages.utils.process_inputs import stringify, create_and_show_df
-from subpages.utils.process_inputs import visualise_data
 import plotly.express as px
+from subpages.utils.streamlit_tools import stringify
 
 
 def main():
@@ -16,12 +15,13 @@ def main():
     )
     st.header("Backcast traffic based on regression coefficients")
 
-    x_cols = [x for x in st.session_state.df.columns if x[0] == "x"]
+    # x_cols = [x for x in st.session_state.df.columns if x[0] == "x"]
     y_cols = [y for y in st.session_state.df.columns if y[0] == "y"]
     st.session_state.y_sel = st.selectbox(
         "Choose the dependent (endogenous) variable:", options=y_cols
     )
-    # st.session_state.x_sel = st.multiselect('Choose independent (exogenous) variables:', options=x_cols)
+    # st.session_state.x_sel =
+    #   st.multiselect('Choose independent (exogenous) variables:', options=x_cols)
     # st.header("Base year data:")
     st.session_state.slider_value_start, st.session_state.slider_value_end = (
         st.select_slider(
@@ -75,7 +75,7 @@ def main():
     # print(st.session_state.bc_df[:prd])
     st.session_state.bc_df[:prd] = elast_df[:prd]
     st.session_state.bc_df["Cumulative Growth"] = None
-    # set the final four timesteps to one #TODO: this needs to be more flexible
+    # set the final four timesteps to one #to-do: this needs to be more flexible
     st.session_state.bc_df.loc[
         st.session_state.bc_df.index[-prd:], "Cumulative Growth"
     ] = 1
@@ -101,10 +101,14 @@ def main():
             df_reset.loc[i - 3, "Cumulative Growth"] = (
                 df_reset.loc[i - 3, col] * df_reset.loc[i + 1, col]
             )
-        # df_reset.loc[i, 'Cumulative Growth'] = df_reset.loc[i, 'g: x:GDP'] * df_reset.loc[i + 4, 'g: x:GDP']
-        # df_reset.loc[i - 1, 'Cumulative Growth'] = df_reset.loc[i - 1, 'g: x:GDP'] * df_reset.loc[i + 3, 'g: x:GDP']
-        # df_reset.loc[i - 2, 'Cumulative Growth'] = df_reset.loc[i - 2, 'g: x:GDP'] * df_reset.loc[i + 2, 'g: x:GDP']
-        # df_reset.loc[i - 3, 'Cumulative Growth'] = df_reset.loc[i - 3, 'g: x:GDP'] * df_reset.loc[i + 1, 'g: x:GDP']
+        # df_reset.loc[i, 'Cumulative Growth'] =
+        #   df_reset.loc[i, 'g: x:GDP'] * df_reset.loc[i + 4, 'g: x:GDP']
+        # df_reset.loc[i - 1, 'Cumulative Growth'] =
+        #   df_reset.loc[i - 1, 'g: x:GDP'] * df_reset.loc[i + 3, 'g: x:GDP']
+        # df_reset.loc[i - 2, 'Cumulative Growth'] =
+        #   df_reset.loc[i - 2, 'g: x:GDP'] * df_reset.loc[i + 2, 'g: x:GDP']
+        # df_reset.loc[i - 3, 'Cumulative Growth'] =
+        #   df_reset.loc[i - 3, 'g: x:GDP'] * df_reset.loc[i + 1, 'g: x:GDP']
     st.session_state.bc_df = df_reset
     # st.dataframe(st.session_state.bc_df)
     # calcs for back casting
@@ -121,7 +125,8 @@ def main():
     ]
     st.dataframe(st.session_state.bc_df)
     # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
-    # TODO: Either modify the visualise_data function to be more flexbile (e.g. add input title) or create a new visualisation funciton
+    # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
+    #   or create a new visualisation funciton
     st.session_state.bc_plot_df = st.session_state.bc_df[
         ["Predicted y", st.session_state.y_sel]
     ]

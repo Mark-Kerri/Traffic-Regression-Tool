@@ -1,4 +1,8 @@
-"""Introduction Page."""
+"""
+Introduction Page.
+
+This script functions as the home page of the app, describing its functions and structure.
+"""
 
 import streamlit as st
 
@@ -26,7 +30,7 @@ def main():
           Here, you can load the completed template and visualise the data. This page is useful
           for exploring the data before running any regression analysis.
 
-        - **Page 3: Define Regression Parameters: **
+        - **Page 3: Regression Control: **
           On this page, you can specify the parameters for the regression analysis and review the
           initial results. This is where you start to see how well the independent variables explain
           the dependent variables.

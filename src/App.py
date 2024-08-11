@@ -102,7 +102,7 @@ def main():
     )
     regression = st.Page(
         "subpages/regression.py",
-        title="Define Regression Parameters",
+        title="Regression Control",
         icon=":material/stacked_line_chart:",
     )
     backcast = st.Page(

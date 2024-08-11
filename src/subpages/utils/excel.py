@@ -43,23 +43,15 @@ Functions:
     Adds variable names, types, and corresponding timeline data to the worksheet,
     including the header and value styling.
 
-Exceptions:
-- FileNotFoundError: Raised if the template file is not found.
-- KeyError: Raised if a required key is missing in input dictionaries.
-- TypeError: Raised if there is a type mismatch in the inputs.
-- openpyxl.utils.exceptions.InvalidFileException: Raised if the Excel template
-  is invalid.
-- OSError: Raised if there is a problem with file I/O operations.
-
-This module is designed to facilitate the creation of structured and well-styled
-Excel templates for data analysis and project management, ensuring consistency
-and accuracy in the generated reports.
+This module is designed to facilitate the creation of structured Excel templates
+for the tool, ensuring consistency and accuracy in the data analysis.
 """
 
 import os
 from copy import copy
 from calendar import month_abbr
 import openpyxl
+import pandas as pd
 
 # Constants
 TEMPLATE_PATH = "data/utils/excel_template_v0.01.xlsx"
@@ -309,3 +301,105 @@ def add_variables_with_timeline(ws, variables, header_text, start_row, timelines
             copy_cell_style(value_style, cell)
 
     return row
+
+
+def spreadsheet_to_df(input_file_path):
+    """
+    Convert data in the Excel spreadsheet temlate into a pandas DataFrame.
+
+    This function reads an Excel file, processes specific columns and rows to extract dependent
+    and independent variables data, and then constructs a DataFrame. It also identifies the
+    time series index and gathers variable type/unit information into a dictionary.
+
+    Assumptions for the following script to work:
+    Column D only has values for dependent and independent variables
+    and no other content (otherwise any column D text will be assumed a new variable)
+    Data for each variable found in Column D is being read from column G onwards
+    until an empty cell is found (None)
+    Output dataframe will name each variable before "Independent Variables" cell
+    as X:{variable name} and every variable after "Independent Variables" cell as Y:{variable name}
+    Building the index of the df assuming column G is empty (on all rows above data)
+    and column G is the first time series column
+
+    Parameters:
+        input_file_path (str): The file path to the input Excel file.
+
+    Returns:
+        tuple: A tuple containing:
+            - df (pd.DataFrame): The resulting DataFrame with dependent and independent variables.
+            - df_index (list): A list representing the DataFrame's time series index.
+            - var_dict (dict): A dictionary mapping variables to their unit type (e.g. "abs/pct").
+    """
+    workbook = openpyxl.load_workbook(input_file_path, data_only=True)
+    sheet = workbook.active
+
+    # Read column names and row names so that the dataframe is filled
+    df_cols = []
+    dependent_flag = 1
+    col = 4  # start from Column D for variable names
+    for row in range(1, sheet.max_row + 1):
+        if sheet.cell(row=row, column=col).value is not None:
+            if sheet.cell(row=row, column=col).value == "Dependent Variables":
+                dependent_flag = 1
+                continue
+            if sheet.cell(row=row, column=col).value == "Independent Variables":
+                dependent_flag = 0
+                continue
+            if dependent_flag == 1:
+                df_cols.append("y:" + sheet.cell(row=row, column=col).value)
+            elif dependent_flag == 0:
+                df_cols.append("x:" + sheet.cell(row=row, column=col).value)
+
+    # Build dataframe by iterating over the columns for each variable
+    df = pd.DataFrame(columns=df_cols)
+    for c in df_cols:
+        temp_list = []
+        for row in range(1, sheet.max_row + 1):
+            if sheet.cell(row=row, column=col).value == c[2:]:
+                start_row = row
+                break
+        cell_names = sheet[start_row]
+        for cell_obj in cell_names[6:]:
+            try:
+                val = float(str(cell_obj.value))
+                temp_list.append(val)
+            except ValueError:
+                break
+        df[c] = temp_list
+
+    # Build the index of the df assuming column G is empty
+    # and column G is the first time series column
+    col = 7  # Start at Col G
+    for row in range(1, sheet.max_row + 1):
+        if sheet.cell(row=row, column=col).value is not None:
+            start_row = row
+            # print(start_row)
+            break
+    idx_row = start_row + 2  # 2 rows below first non-empty cell
+
+    temp_list = []
+    cell_names = sheet[idx_row]
+    for cell_obj in cell_names[(col - 1) :]:
+        try:
+            val = str(cell_obj.value)
+            if val != "None":
+                temp_list.append(val)
+        except ValueError:
+            break
+    df_idx = temp_list
+    df.index = df_idx
+
+    # Read variable type/unit and build a dictionary
+    var_dict = {}
+    col = 5  # Start at Column E
+    for row in range(1, sheet.max_row + 1):
+        if sheet.cell(row=row, column=col).value == "abs/pct" or (
+            sheet.cell(row=row, column=col).value is None
+        ):
+            continue
+        var_dict[sheet.cell(row=row, column=col - 1).value] = sheet.cell(
+            row=row, column=col
+        ).value
+    df_index = df.index
+
+    return df, df_index, var_dict

@@ -7,8 +7,8 @@ data in both table and chart formats.
 """
 
 import streamlit as st
-from subpages.utils.process_inputs import spreadsheet_to_df, stringify
-from subpages.utils.process_inputs import visualise_data, create_and_show_df
+from subpages.utils.excel import spreadsheet_to_df
+from subpages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify
 
 DEFAULT_FILE_PATH_FOR_TESTING = (
     r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data"
@@ -39,6 +39,7 @@ def main():
         st.session_state.df, st.session_state.df_index, st.session_state.var_dict = (
             spreadsheet_to_df(input_file_path)
         )
+        st.session_state.inputs_file_path = input_file_path
 
     if st.session_state.df is not None:
         st.header("Filter Timeline:")
@@ -120,17 +121,15 @@ def data_selection_buttons(
     with container:
         st.header("Datatable")
         filt_df = create_and_show_df(
-            st.session_state.df[slider_value_start : slider_value_end + 1],
+            st.session_state.df,
+            slider_value_start,
+            slider_value_end,
             x_sel,
             y_sel,
         )
 
         st.header("Charts")
-        visualise_data(
-            filt_df,
-            slider_value_start,
-            slider_value_end,
-        )
+        visualise_data(filt_df)
 
 
 if __name__ == "__page__":
