@@ -4,15 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="14abbf4e-b44d-4ffd-8d52-2d0e6f6668ef" name="Changes" comment="Added process_spreadsheet_data as a separate streamlit page, added time series index in process_inputs.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot">
-      <change afterPath="$PROJECT_DIR$/src/pages/3_Backcast.py" afterDir="false" />
+    <list default="true" id="14abbf4e-b44d-4ffd-8d52-2d0e6f6668ef" name="Changes" comment="Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot">
+      <change afterPath="$PROJECT_DIR$/src/apppages/3_Backcast.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/reg_input/Development Test Data Regression Inputs.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/data/reg_input/Development Test Data Regression Inputs.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/1_process_spreadsheet_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/1_Read_Inputs.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/2_data_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/discontinued_script_for_regression_on_raw_data.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/3_regression_on_growth.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/2_Regression.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pages/utils/process_inputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pages/utils/process_inputs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apppages/1_process_spreadsheet_data.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/1_Read_Inputs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apppages/2_data_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/discontinued_script_for_regression_on_raw_data.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apppages/3_regression_on_growth.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/2_Regression.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apppages/utils/streamlit_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/utils/streamlit_tools.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,14 +53,14 @@
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src" />
-      <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\pages" />
+      <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\apppages" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\pages\utils" />
+      <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\apppages\utils" />
       <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.process_inputs">
+  <component name="RunManager" selected="Python.streamlit_tools">
     <configuration name="App" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Traffic-Regression-Tool" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -94,7 +94,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\pages\utils\excel_editor.py" />
+      <option name="SCRIPT_NAME" value="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\apppages\utils\excel_editor.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -103,7 +103,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="process_inputs" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="streamlit_tools" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Traffic-Regression-Tool" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -115,7 +115,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\pages\utils\process_inputs.py" />
+      <option name="SCRIPT_NAME" value="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\apppages\utils\streamlit_tools.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -126,7 +126,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.process_inputs" />
+        <item itemvalue="Python.streamlit_tools" />
         <item itemvalue="Python.App" />
         <item itemvalue="Python.excel_editor" />
       </list>
@@ -141,21 +141,21 @@
       <option name="presentableId" value="Default" />
       <updated>1720521899229</updated>
     </task>
-    <task id="LOCAL-00001" summary="process spreadsheet inputs into df (process_inputs.py)">
+    <task id="LOCAL-00001" summary="process spreadsheet inputs into df (streamlit_tools.py)">
       <created>1720545049203</created>
       <option name="number" value="00001" />
       <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
       <updated>1720545049203</updated>
     </task>
-    <task id="LOCAL-00002" summary="process spreadsheet inputs into df (process_inputs.py)">
+    <task id="LOCAL-00002" summary="process spreadsheet inputs into df (streamlit_tools.py)">
       <created>1720545214690</created>
       <option name="number" value="00002" />
       <option name="presentableId" value="LOCAL-00002" />
       <option name="project" value="LOCAL" />
       <updated>1720545214690</updated>
     </task>
-    <task id="LOCAL-00003" summary="Added process_spreadsheet_data as a separate streamlit page, added time series index in process_inputs.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot">
+    <task id="LOCAL-00003" summary="Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot">
       <created>1720615540498</created>
       <option name="number" value="00003" />
       <option name="presentableId" value="LOCAL-00003" />
@@ -177,8 +177,8 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="process spreadsheet inputs into df (process_inputs.py)" />
-    <MESSAGE value="Added process_spreadsheet_data as a separate streamlit page, added time series index in process_inputs.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added process_spreadsheet_data as a separate streamlit page, added time series index in process_inputs.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot" />
+    <MESSAGE value="process spreadsheet inputs into df (streamlit_tools.py)" />
+    <MESSAGE value="Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot" />
   </component>
 </project>
