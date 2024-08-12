@@ -13,13 +13,13 @@ The main functions include:
 Modules:
 - pathlib: Used for handling filesystem paths.
 - streamlit: Streamlit library to create the web-based user interface.
-- subpages.utils.excel: Custom utility module to generate the Excel template.
+- apppages.utils.excel: Custom utility module to generate the Excel template.
 
 """
 
 from pathlib import Path
 import streamlit as st
-from subpages.utils.excel import create_input_template  # pylint: disable=import-error
+from apppages.utils.excel import create_input_template  # pylint: disable=import-error
 
 
 def delete_x_y_variable(var_type, var_name):
@@ -45,7 +45,11 @@ def main():
     to generate an Excel template file for regression analysis. The function also
     includes input validation and error handling to ensure correct execution.
     """
-    st.sidebar.success(
+    st.title("Input Template")
+    st.markdown(
+        "Provide project and data information to create your Excel inputs template."
+    )
+    st.sidebar.info(
         "This page takes inputs from the user to generate an empty Excel Template file"
     )
 
@@ -198,7 +202,7 @@ def main():
 
     # Button to switch page to next step
     if st.button("Next Page"):
-        st.switch_page("subpages/read_inputs.py")
+        st.switch_page("apppages/read_inputs.py")
 
 
 if __name__ == "__page__":

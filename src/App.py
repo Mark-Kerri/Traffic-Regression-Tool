@@ -17,7 +17,7 @@ Key Features:
   fine-tune elasticities as needed.
 - **Output Curation**: Curate and export the desired outputs for further analysis and reporting.
 
-The application consists of multiple subpages, each dedicated to a specific stage in the regression
+The application consists of multiple apppages, each dedicated to a specific stage in the regression
 analysis process. The page structure is designed to guide the user through the entire workflow from
 data input to output curation.
 
@@ -87,28 +87,28 @@ def main():
     initialise_session_state()
 
     introduction = st.Page(
-        "subpages/introduction.py",
+        "apppages/introduction.py",
         title="Introduction",
         icon=":material/home:",
         default=True,
     )
     input_template = st.Page(
-        "subpages/create_input_template.py",
-        title="Create Input Template",
+        "apppages/create_input_template.py",
+        title="Input Template",
         icon=":material/edit_document:",
     )
     read_inputs = st.Page(
-        "subpages/read_inputs.py", title="Data Exploration", icon=":material/analytics:"
+        "apppages/read_inputs.py", title="Data Exploration", icon=":material/analytics:"
     )
     regression = st.Page(
-        "subpages/regression.py",
+        "apppages/regression.py",
         title="Regression Control",
         icon=":material/stacked_line_chart:",
     )
     backcast = st.Page(
-        "subpages/backcast.py", title="Model Evaluation", icon=":material/troubleshoot:"
+        "apppages/backcast.py", title="Model Evaluation", icon=":material/troubleshoot:"
     )
-    outputs = st.Page("subpages/outputs.py", title="Outputs", icon=":material/output:")
+    outputs = st.Page("apppages/outputs.py", title="Outputs", icon=":material/output:")
 
     pg = st.navigation(
         [introduction, input_template, read_inputs, regression, backcast, outputs]

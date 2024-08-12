@@ -7,8 +7,8 @@ data in both table and chart formats.
 """
 
 import streamlit as st
-from subpages.utils.excel import spreadsheet_to_df
-from subpages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify
+from apppages.utils.excel import spreadsheet_to_df
+from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify
 
 DEFAULT_FILE_PATH_FOR_TESTING = (
     r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data"

@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
-from subpages.utils.streamlit_tools import stringify
+from apppages.utils.streamlit_tools import stringify
 
 
 def main():

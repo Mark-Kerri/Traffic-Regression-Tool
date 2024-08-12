@@ -8,7 +8,7 @@ regression results.
 
 import streamlit as st
 import statsmodels.api as sm
-from subpages.utils.streamlit_tools import growth_df, stringify_g_df, create_and_show_df
+from apppages.utils.streamlit_tools import growth_df, stringify_g_df, create_and_show_df
 
 
 def main():
