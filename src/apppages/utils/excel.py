@@ -165,7 +165,7 @@ def create_input_template(
         name_variables (dict): Project and client names.
         y_variables (dict): Dependent variables and their types.
         x_variables (dict): Independent variables and their types.
-        timeline_inputs (dict): Timeline details.
+        timeline_inputs (dict): Timeline details. Saves the timestep on cell H50 (see timeline_inputs["Timestep"] )
         file_name (str): Desired name for the output file.
         output_folder_path (str): Directory path where the file will be saved.
 
@@ -194,7 +194,7 @@ def create_input_template(
         add_variables_with_timeline(
             ws, x_variables, "Independent Variables", last_row + 5, timelines
         )
-
+        ws['H50'] = timeline_inputs["Timestep"]
         output_path = os.path.join(output_folder_path, f"{file_name}.xlsx")
         wb.save(output_path)
         wb.close()
@@ -402,4 +402,6 @@ def spreadsheet_to_df(input_file_path):
         ).value
     df_index = df.index
 
-    return df, df_index, var_dict
+    # Read timestep from cell H 50
+    timestep = sheet.cell(row=50, column=8).value
+    return df, df_index, var_dict, timestep

@@ -166,5 +166,5 @@ cython_debug/
 
 # Data files
 *.csv
-*.xlsx
+#*.xlsx
 

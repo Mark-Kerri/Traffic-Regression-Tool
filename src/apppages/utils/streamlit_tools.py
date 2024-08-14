@@ -24,7 +24,7 @@ def stringify(i: int = 0) -> str:
     return st.session_state.df_index[i]
 
 
-def create_and_show_df(df, slider_value_start, slider_value_end, x_sel, y_sel):
+def create_and_show_df(df, slider_value_start, slider_value_end, x_sel, y_sel,display_df=True):
     """
     Filter and display a dataframe based on selected columns and slider values.
 
@@ -51,7 +51,8 @@ def create_and_show_df(df, slider_value_start, slider_value_end, x_sel, y_sel):
         filt_cols.append(x)
 
     filt_df = df[slider_value_start : slider_value_end + 1][filt_cols]
-    st.dataframe(data=filt_df)
+    if display_df:
+        st.dataframe(data=filt_df)
 
     return filt_df
 

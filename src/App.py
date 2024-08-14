@@ -60,8 +60,12 @@ def initialise_session_state():
         st.session_state.g_df_idx = None
     if "var_dict" not in st.session_state:
         st.session_state.var_dict = {}
+    if "timestep" not in st.session_state:
+        st.session_state.timestep = None
     if "prd_dict" not in st.session_state:
         st.session_state.prd_dict = {"Monthly": 12, "Quarterly": 4, "Yearly": 12}
+    if "prd" not in st.session_state:
+        st.session_state.prd = None
     if "y_sel" not in st.session_state:
         st.session_state.y_sel = []
     if "x_sel" not in st.session_state:
@@ -70,6 +74,8 @@ def initialise_session_state():
         st.session_state.y_sel_g = []
     if "x_sel_g" not in st.session_state:
         st.session_state.x_sel_g = []
+    if "x_sel_reg" not in st.session_state:
+        st.session_state.x_sel_reg = []
     if "g_df" not in st.session_state:
         st.session_state.g_df = None
     if "r_df" not in st.session_state:
@@ -80,6 +86,20 @@ def initialise_session_state():
         st.session_state.bc_plot_df = None
     if "model_params" not in st.session_state:
         st.session_state.model_params = []
+    if "regression_rank_dict" not in st.session_state:
+        st.session_state.regression_rank_dict = {}
+    if "regr_tests_and_cols_dict" not in st.session_state:
+        st.session_state.regr_tests_and_cols_dict = {}
+    if "model_r_squared" not in st.session_state:
+        st.session_state.model_r_squared = []
+    if "model_regressions_df" not in st.session_state:
+        st.session_state.model_regressions_df = None
+    if "model_regressions_list" not in st.session_state:
+        st.session_state.model_regressions_list = None
+    if "reg_sel" not in st.session_state:
+        st.session_state.reg_sel = None
+    if "n_counter" not in st.session_state:
+        st.session_state.n_counter = 0
 
 
 def main():
@@ -105,13 +125,18 @@ def main():
         title="Regression Control",
         icon=":material/stacked_line_chart:",
     )
+    regression_ranking = st.Page(
+        "apppages/regression_ranking.py",
+        title="Regression Ranking",
+        icon=":material/stacked_line_chart:",
+    )
     backcast = st.Page(
         "apppages/backcast.py", title="Model Evaluation", icon=":material/troubleshoot:"
     )
     outputs = st.Page("apppages/outputs.py", title="Outputs", icon=":material/output:")
 
     pg = st.navigation(
-        [introduction, input_template, read_inputs, regression, backcast, outputs]
+        [introduction, input_template, read_inputs, regression,regression_ranking, backcast, outputs]
     )
     pg.run()
 
