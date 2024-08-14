@@ -6,13 +6,18 @@ It allows users to define dependent and independent variables, choose a time ran
 regression results.
 """
 
-import streamlit as st
-import statsmodels.api as sm
-from apppages.utils.streamlit_tools import growth_df, stringify_g_df, create_and_show_df
 import itertools
 import pandas as pd
-from apppages.utils.streamlit_tools import stringify
+import streamlit as st
+import statsmodels.api as sm
 import plotly.express as px
+from apppages.utils.streamlit_tools import (
+    stringify,
+    growth_df,
+    stringify_g_df,
+    create_and_show_df,
+)
+
 
 def main():
     """
@@ -55,7 +60,6 @@ def main():
     )
     st.session_state.x_sel_g = x_cols
 
-
     # Option to add a constant to the regression model
     constant_sel = st.selectbox("Add constant?:", options=["Yes", "No"])
 
@@ -77,23 +81,27 @@ def main():
             st.session_state.slider_value_end,
             st.session_state.x_sel_g,
             st.session_state.y_sel_g,
-            display_df=False
+            display_df=False,
         )
         # start a new outputs df and reset(?) all relevant session_state variables
         st.session_state.model_regressions_list = []
         st.session_state.model_r_squared = []
         st.session_state.regression_rank_dict = {}
         st.session_state.regr_tests_and_cols_dict = {}
-        st.session_state.model_regressions_df = pd.DataFrame(columns = st.session_state.x_sel_g)
-        st.session_state.model_regressions_df['const'] = None
-    # st.text(x_cols)
+        st.session_state.model_regressions_df = pd.DataFrame(
+            columns=st.session_state.x_sel_g
+        )
+        st.session_state.model_regressions_df["const"] = None
+        # st.text(x_cols)
 
-    # Try to fit a linear regression model and display the results
+        # Try to fit a linear regression model and display the results
         st.session_state.n_counter = 0
         for x_elements in range(len(x_cols)):
             x_combinations = list(itertools.combinations(x_cols, x_elements))
             for x_combo in x_combinations:
-                st.session_state.x_sel_reg = [x for x in st.session_state.x_sel_g if x in list(x_combo)]
+                st.session_state.x_sel_reg = [
+                    x for x in st.session_state.x_sel_g if x in list(x_combo)
+                ]
                 try:
                     if (
                         st.session_state.x_sel_g is not None
@@ -116,13 +124,17 @@ def main():
                             model = sm.OLS(y, x).fit()
 
                             st.session_state.model_params = dict(model.params)
-                            test_name_list = [ item.split('x:')[1] for item in st.session_state.x_sel_reg if 'x:' in item]
+                            test_name_list = [
+                                item.split("x:")[1]
+                                for item in st.session_state.x_sel_reg
+                                if "x:" in item
+                            ]
                             # print(test_name_list)
-                            test_name = '-'.join(test_name_list)
+                            test_name = "-".join(test_name_list)
                             # print(test_name)
                             st.session_state.model_regressions_list.append(test_name)
                             # print(st.session_state.model_regressions_list)
-                            #to-do: adjusted r squared?
+                            # to-do: adjusted r squared?
                             st.session_state.model_r_squared.append(model.rsquared_adj)
                             # print(model.rsquared)
                             # print(len(st.session_state.model_r_squared))
@@ -130,41 +142,79 @@ def main():
                             # print(st.session_state.model_params)
 
                             # Select only the keys that are in the columns
-                            filtered_dicts = [{key: value for key, value in st.session_state.model_params.items() if key in st.session_state.model_regressions_df.columns}]
+                            filtered_dicts = [
+                                {
+                                    key: value
+                                    for key, value in st.session_state.model_params.items()
+                                    if key
+                                    in st.session_state.model_regressions_df.columns
+                                }
+                            ]
 
                             # Append the row
-                            st.session_state.model_regressions_df = pd.concat([st.session_state.model_regressions_df,pd.DataFrame(filtered_dicts,columns = st.session_state.model_regressions_df.columns)])
-                            st.session_state.regression_rank_dict[test_name] = model.summary()
-                            st.session_state.regr_tests_and_cols_dict[test_name] = st.session_state.x_sel_reg
+                            st.session_state.model_regressions_df = pd.concat(
+                                [
+                                    st.session_state.model_regressions_df,
+                                    pd.DataFrame(
+                                        filtered_dicts,
+                                        columns=st.session_state.model_regressions_df.columns,
+                                    ),
+                                ]
+                            )
+                            st.session_state.regression_rank_dict[test_name] = (
+                                model.summary()
+                            )
+                            st.session_state.regr_tests_and_cols_dict[test_name] = (
+                                st.session_state.x_sel_reg
+                            )
                             st.session_state.n_counter += 1
                 except ValueError:
-                    st.error("Please make sure you chose at least one independent (x) variable.")
+                    st.error(
+                        "Please make sure you chose at least one independent (x) variable."
+                    )
                 except KeyError:
-                    st.error("Please click the Update Dataframe button to reload the data.")
-        st.session_state.model_regressions_df['r_squared'] = st.session_state.model_r_squared
-        st.session_state.model_regressions_df['Test name'] = st.session_state.model_regressions_list
-        columns = ['r_squared'] + [col for col in st.session_state.model_regressions_df.columns if col != 'r_squared']
-        st.session_state.model_regressions_df = st.session_state.model_regressions_df[columns]
-        st.session_state.model_regressions_df = st.session_state.model_regressions_df.set_index('Test name')
-        st.session_state.model_regressions_df = st.session_state.model_regressions_df.sort_values('r_squared',ascending=False)
+                    st.error(
+                        "Please click the Update Dataframe button to reload the data."
+                    )
+        st.session_state.model_regressions_df["r_squared"] = (
+            st.session_state.model_r_squared
+        )
+        st.session_state.model_regressions_df["Test name"] = (
+            st.session_state.model_regressions_list
+        )
+        columns = ["r_squared"] + [
+            col
+            for col in st.session_state.model_regressions_df.columns
+            if col != "r_squared"
+        ]
+        st.session_state.model_regressions_df = st.session_state.model_regressions_df[
+            columns
+        ]
+        st.session_state.model_regressions_df = (
+            st.session_state.model_regressions_df.set_index("Test name")
+        )
+        st.session_state.model_regressions_df = (
+            st.session_state.model_regressions_df.sort_values(
+                "r_squared", ascending=False
+            )
+        )
 
-    st.subheader(f"Regression outputs for {st.session_state.y_sel_g} "
-                 f"\n All combinations of independent (x) variables ({st.session_state.n_counter+1} tests), "
-                 f"\n sorted by adjusted r squared highest to lowest")
+    st.subheader(
+        f"Regression outputs for {st.session_state.y_sel_g} "
+        f"\n All combinations of independent (x) variables ({st.session_state.n_counter+1} tests), "
+        f"\n sorted by adjusted r squared highest to lowest"
+    )
     st.dataframe(st.session_state.model_regressions_df)
 
-    st.session_state.reg_sel  = st.text_input(
+    st.session_state.reg_sel = st.text_input(
         "Paste the test name of the regression for which you want to explore:"
     )
 
     if st.button("Get regression summary table"):
         st.text(st.session_state.regression_rank_dict[st.session_state.reg_sel])
 
-
-
-
     # pasted backcast code below to be adapted in this page
-    st.session_state.y_sel = st.session_state.y_sel_g.split('g: ')[1]
+    st.session_state.y_sel = st.session_state.y_sel_g.split("g: ")[1]
 
     st.session_state.slider_value_start, st.session_state.slider_value_end = (
         st.select_slider(
@@ -186,48 +236,60 @@ def main():
     print(st.session_state.df.head())
     print(st.session_state.y_sel)
     print(
-        st.session_state.df[st.session_state.y_sel][base_year_start: base_year_end + 1]
+        st.session_state.df[st.session_state.y_sel][base_year_start : base_year_end + 1]
     )
 
     # use the test name entered above to find the parameters from the equivalent test
-    test_df = pd.DataFrame(st.session_state.model_regressions_df.loc[st.session_state.reg_sel]).transpose()
+    test_df = pd.DataFrame(
+        st.session_state.model_regressions_df.loc[st.session_state.reg_sel]
+    ).transpose()
     st.subheader("Regression outputs for selected test")
     st.dataframe(test_df)
 
     # print(st.session_state.g_df.columns)
-    if st.button('Display base year data'):
+    if st.button("Display base year data"):
         st.header("Base year data:")
         st.dataframe(
-            st.session_state.df[st.session_state.y_sel][base_year_start : base_year_end + 1]
+            st.session_state.df[st.session_state.y_sel][
+                base_year_start : base_year_end + 1
+            ]
         )
-    if st.button('Display growth rates table'):
+    if st.button("Display growth rates table"):
 
         st.header("Growth rates:")
         # growth rate of GDP
         st.dataframe(st.session_state.g_df)
     elast_df = (
-            st.session_state.g_df[st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]]
-            ** test_df[st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]].iloc[0][
-                st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]]
+        st.session_state.g_df[
+            st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]
+        ]
+        ** test_df[
+            st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]
+        ].iloc[0][st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]]
     )
 
     st.header("Backcast:")
     st.session_state.bc_df = pd.DataFrame(
-        data=elast_df.shift(periods=-st.session_state.prd), index=st.session_state.df.index
+        data=elast_df.shift(periods=-st.session_state.prd),
+        index=st.session_state.df.index,
     )
     # print(st.session_state.bc_df[:st.session_state.prd])
-    st.session_state.bc_df[:st.session_state.prd] = elast_df[:st.session_state.prd]
+    st.session_state.bc_df[: st.session_state.prd] = elast_df[: st.session_state.prd]
     st.session_state.bc_df["Cumulative Growth"] = None
     # set the final four timesteps to one #to-do: this needs to be more flexible
     st.session_state.bc_df.loc[
-        st.session_state.bc_df.index[-st.session_state.prd:], "Cumulative Growth"
+        st.session_state.bc_df.index[-st.session_state.prd :], "Cumulative Growth"
     ] = 1
 
     # print(len(st.session_state.bc_df))
-    print('GDP col:', st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel])
+    print(
+        "GDP col:", st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]
+    )
     for col in st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]:
         print(col)
-        st.session_state.bc_df.loc[st.session_state.bc_df.index[-st.session_state.prd:], col] = 1
+        st.session_state.bc_df.loc[
+            st.session_state.bc_df.index[-st.session_state.prd :], col
+        ] = 1
     df_reset = st.session_state.bc_df.reset_index()
 
     for col in st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]:
@@ -260,10 +322,11 @@ def main():
         st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
             st.session_state.y_sel
         ]
-        if st.button('Display predicted y table:'):
+        if st.button("Display predicted y table:"):
             st.dataframe(st.session_state.bc_df)
         # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
-        # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
+        # to-do: Either modify the visualise_data function to be more flexbile
+        # (e.g. add input title)
         #   or create a new visualisation funciton
         st.session_state.bc_plot_df = st.session_state.bc_df[
             ["Predicted y", st.session_state.y_sel]
@@ -277,6 +340,11 @@ def main():
         fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
         st.plotly_chart(fig)
     except TypeError:
-        print('Please paste a test name in the text input box above to load the outputs from a specific regression')
+        print(
+            "Please paste a test name in the text input box above"
+            " to load the outputs from a specific regression"
+        )
+
+
 if __name__ == "__page__":
     main()
