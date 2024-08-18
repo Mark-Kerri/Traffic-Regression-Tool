@@ -6,7 +6,7 @@ from apppages.utils.streamlit_tools import stringify
 
 def main():
     # 4 for quarterly data
-    prd = st.session_state.prd_dict["Quarterly"]
+    prd = st.session_state.prd
 
     print(prd)
     st.set_page_config(page_title="Backcast")

@@ -123,15 +123,17 @@ def growth_df(df):
     Returns:
     tuple: A tuple containing the growth dataframe and its index.
     """
-    prd = 4  # Quarterly data
-
+    print(st.session_state.prd)
+    # print(st.session_state.prd_dict)
+    # prd = st.session_state.prd_dict[st.session_state.prd]  # Quarterly/Yearly/Monthly data
+    # print(prd)
     # Identify columns of each type and calculate growth rates
     for df_col in df.columns:
         var_type = st.session_state.var_dict[df_col[2:]]
         if var_type == "abs":
-            df["g: " + df_col] = df[df_col].pct_change(periods=prd) + 1
+            df["g: " + df_col] = df[df_col].pct_change(periods=st.session_state.prd) + 1
         elif var_type == "pct_val_or_dummy":
-            df["g: " + df_col] = np.exp(df[df_col] - df[df_col].shift(prd))
+            df["g: " + df_col] = np.exp(df[df_col] - df[df_col].shift(st.session_state.prd))
         elif var_type == "pct_change":
             df["g: " + df_col] = df[df_col] + 1
 

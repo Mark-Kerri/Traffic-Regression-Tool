@@ -63,7 +63,7 @@ def initialise_session_state():
     if "timestep" not in st.session_state:
         st.session_state.timestep = None
     if "prd_dict" not in st.session_state:
-        st.session_state.prd_dict = {"Monthly": 12, "Quarterly": 4, "Yearly": 12}
+        st.session_state.prd_dict = {"Monthly": 12, "Quarterly": 4, "Yearly": 1}
     if "prd" not in st.session_state:
         st.session_state.prd = None
     if "y_sel" not in st.session_state:
@@ -100,6 +100,8 @@ def initialise_session_state():
         st.session_state.reg_sel = None
     if "n_counter" not in st.session_state:
         st.session_state.n_counter = 0
+    if "constant_sel" not in st.session_state:
+        st.session_state.constant_sel = False
 
 
 def main():

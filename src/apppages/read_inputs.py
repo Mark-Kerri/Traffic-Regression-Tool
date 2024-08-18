@@ -11,8 +11,7 @@ from apppages.utils.excel import spreadsheet_to_df
 from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify
 
 DEFAULT_FILE_PATH_FOR_TESTING = (
-    r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data"
-    r"\reg_input\Development Test VKM Data Regression Inputs.xlsx"
+    r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data\reg_input\Development Annual Traffic Data Regression Inputs.xlsx"
 )
 
 
