@@ -10,9 +10,7 @@ import streamlit as st
 from apppages.utils.excel import spreadsheet_to_df
 from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify
 
-DEFAULT_FILE_PATH_FOR_TESTING = (
-    r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data\reg_input\Development Annual Traffic Data Regression Inputs.xlsx"
-)
+DEFAULT_FILE_PATH_FOR_TESTING = r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data\reg_input\Development Annual Traffic Data Regression Inputs.xlsx"
 
 
 def main():
@@ -30,14 +28,17 @@ def main():
 
     input_file_path = st.text_input(
         "Enter the full file path (without quotes):",
-        # value=st.session_state.inputs_file_path,
-        value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
+        value=st.session_state.inputs_file_path,
+        # value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
     )
 
     if st.button("Read spreadsheet"):
-        st.session_state.df, st.session_state.df_index, st.session_state.var_dict, st.session_state.timestep = (
-            spreadsheet_to_df(input_file_path)
-        )
+        (
+            st.session_state.df,
+            st.session_state.df_index,
+            st.session_state.var_dict,
+            st.session_state.timestep,
+        ) = spreadsheet_to_df(input_file_path)
         print(st.session_state.timestep)
         st.session_state.prd = st.session_state.prd_dict[st.session_state.timestep]
         st.session_state.inputs_file_path = input_file_path

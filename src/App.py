@@ -102,7 +102,16 @@ def initialise_session_state():
         st.session_state.n_counter = 0
     if "constant_sel" not in st.session_state:
         st.session_state.constant_sel = False
-
+    if "selected_regression" not in st.session_state:
+        st.session_state.selected_regression = None
+    if "reg_influence" not in st.session_state:
+        st.session_state.reg_influence = None
+    if "reg_residuals" not in st.session_state:
+        st.session_state.reg_residuals = {}
+    if "reg_fitted_vals" not in st.session_state:
+        st.session_state.reg_fitted_vals = {}
+    if "residuals_df" not in st.session_state:
+        st.session_state.residuals_df = None
 
 def main():
     """Run main function to render the Streamlit app interface."""
@@ -122,23 +131,17 @@ def main():
     read_inputs = st.Page(
         "apppages/read_inputs.py", title="Data Exploration", icon=":material/analytics:"
     )
-    regression = st.Page(
-        "apppages/regression.py",
-        title="Regression Control",
-        icon=":material/stacked_line_chart:",
-    )
+
     regression_ranking = st.Page(
         "apppages/regression_ranking.py",
         title="Regression Ranking",
         icon=":material/stacked_line_chart:",
     )
-    backcast = st.Page(
-        "apppages/backcast.py", title="Model Evaluation", icon=":material/troubleshoot:"
-    )
+
     outputs = st.Page("apppages/outputs.py", title="Outputs", icon=":material/output:")
 
     pg = st.navigation(
-        [introduction, input_template, read_inputs, regression,regression_ranking, backcast, outputs]
+        [introduction, input_template, read_inputs, regression_ranking, outputs]
     )
     pg.run()
 
