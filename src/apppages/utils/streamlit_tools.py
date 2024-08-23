@@ -123,7 +123,7 @@ def growth_df(df):
     Returns:
     tuple: A tuple containing the growth dataframe and its index.
     """
-    print(st.session_state.prd)
+    # print(st.session_state.prd)
     # print(st.session_state.prd_dict)
     # prd = st.session_state.prd_dict[st.session_state.prd]  # Quarterly/Yearly/Monthly data
     # print(prd)

@@ -231,18 +231,19 @@ def main():
                 st.session_state.residuals_df['Fitted values'] = st.session_state.reg_fitted_vals[st.session_state.reg_sel]
                 st.session_state.residuals_df['Actuals'] = st.session_state.residuals_df['Residuals']  + st.session_state.residuals_df['Fitted values']
 
-                st.dataframe(st.session_state.residuals_df)
+                if st.button('Display residuals data'):
+                    st.dataframe(st.session_state.residuals_df)
                 # Plot residuals
-                fig = px.line(
-                    st.session_state.residuals_df,
-                    x=st.session_state.residuals_df.index,
-                    y=st.session_state.residuals_df.columns,
-                    title=f"Residuals over time",
-                )
-                fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
-
-
-                st.plotly_chart(fig)
+                # fig = px.line(
+                #     st.session_state.residuals_df,
+                #     x=st.session_state.residuals_df.index,
+                #     y=st.session_state.residuals_df.columns,
+                #     title=f"Residuals over time",
+                # )
+                # fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
+                columns = st.multiselect("Columns:", st.session_state.residuals_df.columns)
+                st.scatter_chart(data=st.session_state.residuals_df[columns])
+                # st.plotly_chart(fig)
 
                 # fig_inf = sm.graphics.influence_plot(st.session_state.reg_influence, criterion="cooks")
                 # fig_inf.tight_layout(pad=1.0)
@@ -270,7 +271,7 @@ def main():
         st.session_state.y_sel = st.session_state.y_sel_g.split("g: ")[1]
 
         if st.session_state.selected_regression is not None:
-            st.session_state.slider_value_start, st.session_state.slider_value_end = (
+            st.session_state.base_slider_value_start, st.session_state.base_slider_value_end = (
                 st.select_slider(
                     "Select the range of points to be used as base year",
                     options=range(0, len(st.session_state.df)),
@@ -278,18 +279,18 @@ def main():
                     # on_change=visualise_data,
                     args=(
                         st.session_state.df,
-                        st.session_state.slider_value_start,
-                        st.session_state.slider_value_end,
+                        st.session_state.base_slider_value_start,
+                        st.session_state.base_slider_value_end,
                     ),
                     format_func=stringify,
                 )
             )
-            base_year_start = st.session_state.slider_value_start
-            base_year_end = st.session_state.slider_value_end
+            base_year_start = st.session_state.base_slider_value_start
+            base_year_end = st.session_state.base_slider_value_end
         # print(st.session_state.g_df.columns)
         if (
-            st.session_state.slider_value_start != 0
-            or st.session_state.slider_value_end != -1
+            st.session_state.base_slider_value_start != 0
+            or st.session_state.base_slider_value_end != -1
         ):
             if st.button("Display base year data"):
                 st.header("Base year data:")
@@ -302,7 +303,7 @@ def main():
 
                 st.header("Growth rates:")
                 # growth rate of GDP
-                st.dataframe(st.session_state.g_df)
+                st.dataframe(st.session_state.g_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1])
         # simplify the variable equal to the growth df columns of the regression test to be analysed
         if (
             st.session_state.reg_sel is not None
@@ -411,7 +412,7 @@ def main():
 
             # bring back index to be used for x-axis of plots
             st.session_state.bc_df = st.session_state.bc_df.set_index("index")
-
+            # st.session_state.bc_df = st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1]
             # convert to float for plotting
             st.session_state.bc_df["Predicted y"] = st.session_state.bc_df[
                 "Predicted y"
@@ -429,7 +430,7 @@ def main():
                 st.session_state.y_sel
             ]
             if st.button("Display Forecasted y table:"):
-                st.dataframe(st.session_state.bc_df)
+                st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+2])
                 # st.text(st.session_state.y_sel)
             # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
             # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
@@ -437,8 +438,10 @@ def main():
             st.session_state.bc_plot_df = st.session_state.bc_df[
                 ["Forecasted y", st.session_state.y_sel]
             ]
-            st.write(st.session_state.slider_value_start)
-            st.write(st.session_state.slider_value_end)
+
+
+            st.session_state.bc_plot_df = st.session_state.bc_plot_df[st.session_state.slider_value_start:st.session_state.slider_value_end+2]
+
             fig = px.line(
                 st.session_state.bc_plot_df,
                 x=st.session_state.bc_plot_df.index,

@@ -39,7 +39,6 @@ def main():
             st.session_state.var_dict,
             st.session_state.timestep,
         ) = spreadsheet_to_df(input_file_path)
-        print(st.session_state.timestep)
         st.session_state.prd = st.session_state.prd_dict[st.session_state.timestep]
         st.session_state.inputs_file_path = input_file_path
 
@@ -95,7 +94,9 @@ def main():
                     y_cols,
                     data_container,
                 )
-
+    if st.button('Clear cache'):
+        for key in st.session_state.keys():
+            del st.session_state[key]
 
 def data_selection_buttons(
     slider_value_start: int,

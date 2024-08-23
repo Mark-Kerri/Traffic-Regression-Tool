@@ -48,6 +48,10 @@ def initialise_session_state():
         st.session_state.slider_value_start = 0  # Default value
     if "slider_value_end" not in st.session_state:
         st.session_state.slider_value_end = -1  # Default value
+    if "base_slider_value_start" not in st.session_state:
+        st.session_state.base_slider_value_start = 0  # Default value
+    if "base_slider_value_end" not in st.session_state:
+        st.session_state.base_slider_value_end = -1  # Default value
     if "export_file_path" not in st.session_state:
         st.session_state.export_file_path = (
             "outputs/interim_df_output.csv"  # Default value
@@ -86,6 +90,8 @@ def initialise_session_state():
         st.session_state.bc_plot_df = None
     if "model_params" not in st.session_state:
         st.session_state.model_params = []
+    if "model_params" not in st.session_state:
+        st.session_state.model_params = []
     if "regression_rank_dict" not in st.session_state:
         st.session_state.regression_rank_dict = {}
     if "regr_tests_and_cols_dict" not in st.session_state:
@@ -112,7 +118,10 @@ def initialise_session_state():
         st.session_state.reg_fitted_vals = {}
     if "residuals_df" not in st.session_state:
         st.session_state.residuals_df = None
-
+    if "residuals_df_filtered" not in st.session_state:
+        st.session_state.residuals_df_filtered = None
+    if "output_path" not in st.session_state:
+        st.session_state.output_path = None
 def main():
     """Run main function to render the Streamlit app interface."""
     initialise_session_state()

@@ -50,8 +50,11 @@ for the tool, ensuring consistency and accuracy in the data analysis.
 import os
 from copy import copy
 from calendar import month_abbr
+import xlsxwriter
 import openpyxl
 import pandas as pd
+from datetime import datetime
+from openpyxl.chart import ScatterChart, Reference, Series
 
 # Constants
 TEMPLATE_PATH = "data/utils/excel_template_v0.01.xlsx"
@@ -405,3 +408,41 @@ def spreadsheet_to_df(input_file_path):
     # Read timestep from cell H 50
     timestep = sheet.cell(row=50, column=8).value
     return df, df_index, var_dict, timestep
+
+# def export_to_excel(coeff_df,df,summary_df,residuals_df,path):
+
+def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path):
+    current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
+
+    with pd.ExcelWriter(os.path.join(path,f'{current_timestamp}_{test_name}_output.xlsx'), engine='xlsxwriter') as writer:
+        # Write each dataframe to a different worksheet.
+        coeff_df.to_excel(writer, sheet_name=f'{test_name} Coeffs', index=True)
+        summary_tables = pd.DataFrame()
+        for table in summary_df.tables:
+            summary_tables = pd.concat([summary_tables,pd.DataFrame(table)])
+            summary_tables.to_excel(writer, sheet_name=f'{test_name} Summ', index=False)
+        residuals_df.to_excel(writer, sheet_name=f'{test_name} Rsdl', index=True)
+
+
+        workbook = writer.book
+        worksheet = writer.sheets[f'{test_name} Rsdl']
+
+        # Define the chart object
+        chart = workbook.add_chart({'type': 'scatter'})
+
+        # Add the first series (Column B as Y values)
+        # chart.add_series({'values': f'{test_name} Rsdl!$A$1:$A$5'})
+        # chart.add_series({'values': f'{test_name} Rsdl!$B$1:$B$5'})
+        for i in range(1,4):
+            chart.add_series({
+                'name':[f'{test_name} Rsdl', 0, i, 0, i],
+                'categories': [f'{test_name} Rsdl', 1, 0, len(residuals_df), 0],
+                'values': [f'{test_name} Rsdl', 1, i, len(residuals_df), i]})
+
+        # Set chart title and labels
+        chart.set_title({'name': 'Residuals scatter plot'})
+        chart.set_x_axis({'name': 'Time'})
+        chart.set_y_axis({'name': 'Residuals'})
+
+        # Insert the chart into the worksheet
+        worksheet.insert_chart('F2', chart)
