@@ -429,7 +429,7 @@ def main():
             st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
                 st.session_state.y_sel
             ]
-            if st.button("Display Forecasted y table:"):
+            if st.button("Display Forecasted y table"):
                 st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+2])
                 # st.text(st.session_state.y_sel)
             # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)

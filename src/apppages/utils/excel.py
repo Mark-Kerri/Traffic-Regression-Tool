@@ -411,7 +411,7 @@ def spreadsheet_to_df(input_file_path):
 
 # def export_to_excel(coeff_df,df,summary_df,residuals_df,path):
 
-def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path):
+def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
     current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
 
     with pd.ExcelWriter(os.path.join(path,f'{current_timestamp}_{test_name}_output.xlsx'), engine='xlsxwriter') as writer:
@@ -422,6 +422,7 @@ def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path):
             summary_tables = pd.concat([summary_tables,pd.DataFrame(table)])
             summary_tables.to_excel(writer, sheet_name=f'{test_name} Summ', index=False)
         residuals_df.to_excel(writer, sheet_name=f'{test_name} Rsdl', index=True)
+
 
 
         workbook = writer.book
@@ -446,3 +447,27 @@ def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path):
 
         # Insert the chart into the worksheet
         worksheet.insert_chart('F2', chart)
+
+        forecast_df.to_excel(writer, sheet_name=f'{test_name} Predicted', index=True)
+
+        worksheet = writer.sheets[f'{test_name} Predicted']
+
+        # Define the chart object
+        chart = workbook.add_chart({'type': 'line'})
+
+        # Add the first series (Column B as Y values)
+        # chart.add_series({'values': f'{test_name} Rsdl!$A$1:$A$5'})
+        # chart.add_series({'values': f'{test_name} Rsdl!$B$1:$B$5'})
+        for i in range(1,3):
+            chart.add_series({
+                'name':[f'{test_name} Predicted', 0, i, 0, i],
+                'categories': [f'{test_name} Predicted', 1, 0, len(forecast_df), 0],
+                'values': [f'{test_name} Predicted', 1, i, len(forecast_df), i]})
+
+        # Set chart title and labels
+        chart.set_title({'name': 'Predicted traffic plot'})
+        chart.set_x_axis({'name': 'Time'})
+        chart.set_y_axis({'name': 'Predicted AADT'})
+
+        # Insert the chart into the worksheet
+        worksheet.insert_chart('E2', chart)

@@ -9,6 +9,8 @@ def main():
     st.session_state.output_path = st.text_input('Type the output folder path below:',value='outputs')
 
 
+    # add plot from current selection only (TODO: need to create and save bc_plot_df from all tests?)
+    forecast_df = st.session_state.bc_plot_df
 
     if st.button('Export output spreadsheet with selected regression'):
         for test in tests:
@@ -18,8 +20,9 @@ def main():
             residuals_df['Residuals'] = st.session_state.reg_residuals[test]
             residuals_df['Fitted values'] = st.session_state.reg_fitted_vals[test]
             residuals_df['Actuals'] = residuals_df['Residuals'] + residuals_df['Fitted values']
-
-            export_to_excel(test,coeff_df,summary_df,residuals_df,st.session_state.output_path)
+            # to be updated when each bc_df is saved in a dictionary  for each test?
+            forecast_df = forecast_df
+            export_to_excel(test,coeff_df,summary_df,residuals_df,st.session_state.output_path,forecast_df)
         # export_to_excel(coeff_df,df,reg_summary,residuals_df,path)
 
 if __name__ == "__page__":
