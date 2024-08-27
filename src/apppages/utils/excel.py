@@ -411,9 +411,9 @@ def spreadsheet_to_df(input_file_path):
 
 # def export_to_excel(coeff_df,df,summary_df,residuals_df,path):
 
-def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
+def export_to_excel(g_df,test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
     current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
-
+    forecast_df_cols = len(forecast_df.columns)
     with pd.ExcelWriter(os.path.join(path,f'{current_timestamp}_{test_name}_output.xlsx'), engine='xlsxwriter') as writer:
         # Write each dataframe to a different worksheet.
         coeff_df.to_excel(writer, sheet_name=f'{test_name} Coeffs', index=True)
@@ -423,6 +423,8 @@ def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path,forecast_df)
             summary_tables.to_excel(writer, sheet_name=f'{test_name} Summ', index=False)
         residuals_df.to_excel(writer, sheet_name=f'{test_name} Rsdl', index=True)
 
+        ws_coeff = writer.sheets[f'{test_name} Coeffs']
+        ws_coeff = ws_coeff.set_column(0, 0, 25)
 
 
         workbook = writer.book
@@ -458,7 +460,7 @@ def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path,forecast_df)
         # Add the first series (Column B as Y values)
         # chart.add_series({'values': f'{test_name} Rsdl!$A$1:$A$5'})
         # chart.add_series({'values': f'{test_name} Rsdl!$B$1:$B$5'})
-        for i in range(1,3):
+        for i in range(1,forecast_df_cols+1):
             chart.add_series({
                 'name':[f'{test_name} Predicted', 0, i, 0, i],
                 'categories': [f'{test_name} Predicted', 1, 0, len(forecast_df), 0],
@@ -470,4 +472,6 @@ def export_to_excel(test_name,coeff_df,summary_df,residuals_df,path,forecast_df)
         chart.set_y_axis({'name': 'Predicted AADT'})
 
         # Insert the chart into the worksheet
-        worksheet.insert_chart('E2', chart)
+        worksheet.insert_chart('I2', chart)
+
+        g_df.to_excel(writer, sheet_name=f'{test_name} growth rates', index=True)

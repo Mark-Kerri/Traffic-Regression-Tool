@@ -264,6 +264,7 @@ def main():
                 ).transpose()
                 st.subheader("Regression coefficients for selected test")
                 coeff_df = st.data_editor(coeff_df, num_rows="dynamic")
+                print(coeff_df)
             except KeyError:
                 st.write("")
 
