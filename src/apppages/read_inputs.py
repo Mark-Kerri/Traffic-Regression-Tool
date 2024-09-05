@@ -42,6 +42,8 @@ def main():
         st.session_state.prd = st.session_state.prd_dict[st.session_state.timestep]
         st.session_state.inputs_file_path = input_file_path
 
+    st.session_state.output_path = st.text_input('Type the output folder path below:',value='outputs')
+
     if st.session_state.df is not None:
         st.header("Filter Timeline:")
         st.session_state.slider_value_start, st.session_state.slider_value_end = (

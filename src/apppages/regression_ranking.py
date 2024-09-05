@@ -13,7 +13,7 @@ import statsmodels.api as sm
 from statsmodels.stats.outliers_influence import OLSInfluence
 import plotly.express as px
 from apppages.utils.streamlit_tools import stringify, growth_df, stringify_g_df, create_and_show_df
-
+import os
 def main():
     """
     Run main function for the 'Regression Control' Streamlit app page.
@@ -58,6 +58,8 @@ def main():
         # Option to add a constant to the regression model
         # st.session_state.constant_sel = st.selectbox("Add constant?:", options=["Yes", "No"])
         st.session_state.constant_sel = st.checkbox("Include constant", value=True)
+        st.session_state.growth_df_checkbox = st.checkbox("Display growth rates table", value=False)
+
         # Slider for selecting the time range to analyze
         st.session_state.slider_value_start, st.session_state.slider_value_end = (
             st.select_slider(
@@ -76,7 +78,7 @@ def main():
                 st.session_state.slider_value_end,
                 st.session_state.x_sel_g,
                 st.session_state.y_sel_g,
-                display_df=True,
+                display_df=st.session_state.growth_df_checkbox,
             )
             # start a new outputs df and reset(?) all relevant session_state variables
             st.session_state.model_regressions_list = []
@@ -219,7 +221,7 @@ def main():
                     ].index[0],
                 )
             except IndexError:
-                st.write("Please select a test from the table above!")
+                st.write(":red[**Please select a test from the table above!**]")
         if st.session_state.reg_sel:
             with st.expander("Regression summary table"):
                 st.text(st.session_state.regression_rank_dict[st.session_state.reg_sel])
@@ -430,7 +432,7 @@ def main():
             st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
                 st.session_state.y_sel
             ]
-            if st.button("Display Forecasted y table"):
+            if st.button("Display forecasted y table"):
                 st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+2])
                 # st.text(st.session_state.y_sel)
             # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
@@ -447,10 +449,16 @@ def main():
                 st.session_state.bc_plot_df,
                 x=st.session_state.bc_plot_df.index,
                 y=st.session_state.bc_plot_df.columns,
-                title=f"Backcasting {st.session_state.y_sel} over time",
+                title=f"Forecast on historic data of {st.session_state.y_sel}",
+                color_discrete_sequence=st.session_state.custom_colors
             )
             fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
             st.plotly_chart(fig)
+            if st.button("Export forecast as html"):
+                fig.write_html(os.path.join(st.session_state.output_path,f"Forecast of {st.session_state.y_sel[2:]} "
+                                                                     f"({st.session_state.bc_plot_df.index[0]} "
+                                                                     f"-{st.session_state.bc_plot_df.index[-1]}).html")
+                           ) # Save as HTML
 
     else:
         st.subheader(

@@ -52,7 +52,8 @@ def create_and_show_df(df, slider_value_start, slider_value_end, x_sel, y_sel,di
 
     filt_df = df[slider_value_start : slider_value_end + 1][filt_cols]
     if display_df:
-        st.dataframe(data=filt_df)
+        with st.expander("Growth rates table"):
+            st.dataframe(data=filt_df)
 
     return filt_df
 
@@ -84,6 +85,8 @@ def visualise_data(df):
         x=df.index,
         y=df.columns,
         title="Interactive chart of each variable over time",
+        color_discrete_sequence=st.session_state.custom_colors
+
     )
     fig.update_layout(xaxis_title="Timeline", yaxis_title="Variable")
     st.plotly_chart(fig)
@@ -95,6 +98,7 @@ def visualise_data(df):
         x=df_indexed.index,
         y=df_indexed.columns,
         title="Interactive chart of each variable indexed to base-100 over time",
+        color_discrete_sequence=st.session_state.custom_colors
     )
     fig.update_layout(xaxis_title="Timeline", yaxis_title="Indexed variable")
     st.plotly_chart(fig)

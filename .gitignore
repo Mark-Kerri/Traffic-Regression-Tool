@@ -167,4 +167,4 @@ cython_debug/
 # Data files
 *.csv
 *.xlsx
-
+*.html

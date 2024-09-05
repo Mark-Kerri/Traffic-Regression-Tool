@@ -108,6 +108,8 @@ def initialise_session_state():
         st.session_state.n_counter = 0
     if "constant_sel" not in st.session_state:
         st.session_state.constant_sel = False
+    if "constant_sel" not in st.session_state:
+        st.session_state.growth_df_checkbox = False
     if "selected_regression" not in st.session_state:
         st.session_state.selected_regression = None
     if "reg_influence" not in st.session_state:
@@ -122,6 +124,16 @@ def initialise_session_state():
         st.session_state.residuals_df_filtered = None
     if "output_path" not in st.session_state:
         st.session_state.output_path = None
+    if "custom_colors" not in st.session_state:
+        st.session_state.custom_colors = [
+                '#009dc8',  # Turquoise
+                'black',  # Black
+                'orange',  # Orange
+                'darkgreen',  # Dark Green
+                'blue',  # Blue
+                'darkred',  # Dark Red
+                '#A7C7E7'  # Light Gray-Blue (using hex code)
+            ]
 def main():
     """Run main function to render the Streamlit app interface."""
     initialise_session_state()
