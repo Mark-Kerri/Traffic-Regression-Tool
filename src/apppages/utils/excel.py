@@ -411,24 +411,36 @@ def spreadsheet_to_df(input_file_path):
 
 # def export_to_excel(coeff_df,df,summary_df,residuals_df,path):
 
-def export_to_excel(g_df,test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
+def export_to_excel(base_year_datapoints,g_df,test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
+
+    # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
+    workbook_test_name = test_name
+    if len(test_name)>20:
+        shortened_test_name_elements = [x[:3] for x in test_name.split('-')]
+        workbook_test_name = ''.join(shortened_test_name_elements)
+
     current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
     forecast_df_cols = len(forecast_df.columns)
-    with pd.ExcelWriter(os.path.join(path,f'{current_timestamp}_{test_name}_output.xlsx'), engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(os.path.join(path,f'{current_timestamp}_{workbook_test_name}_output.xlsx'), engine='xlsxwriter') as writer:
+
+        # add metadata
+        metadata = pd.DataFrame(data=base_year_datapoints)
+        metadata.to_excel(writer, sheet_name=f'Metadata', index=True)
+
         # Write each dataframe to a different worksheet.
-        coeff_df.to_excel(writer, sheet_name=f'{test_name} Coeffs', index=True)
+        coeff_df.to_excel(writer, sheet_name=f'{workbook_test_name} Coeffs', index=True)
         summary_tables = pd.DataFrame()
         for table in summary_df.tables:
             summary_tables = pd.concat([summary_tables,pd.DataFrame(table)])
-            summary_tables.to_excel(writer, sheet_name=f'{test_name} Summ', index=False)
-        residuals_df.to_excel(writer, sheet_name=f'{test_name} Rsdl', index=True)
+            summary_tables.to_excel(writer, sheet_name=f'{workbook_test_name} Summ', index=False)
+        residuals_df.to_excel(writer, sheet_name=f'{workbook_test_name} Rsdl', index=True)
 
-        ws_coeff = writer.sheets[f'{test_name} Coeffs']
+        ws_coeff = writer.sheets[f'{workbook_test_name} Coeffs']
         ws_coeff = ws_coeff.set_column(0, 0, 25)
 
 
         workbook = writer.book
-        worksheet = writer.sheets[f'{test_name} Rsdl']
+        worksheet = writer.sheets[f'{workbook_test_name} Rsdl']
 
         # Define the chart object
         chart = workbook.add_chart({'type': 'scatter'})
@@ -438,9 +450,9 @@ def export_to_excel(g_df,test_name,coeff_df,summary_df,residuals_df,path,forecas
         # chart.add_series({'values': f'{test_name} Rsdl!$B$1:$B$5'})
         for i in range(1,4):
             chart.add_series({
-                'name':[f'{test_name} Rsdl', 0, i, 0, i],
-                'categories': [f'{test_name} Rsdl', 1, 0, len(residuals_df), 0],
-                'values': [f'{test_name} Rsdl', 1, i, len(residuals_df), i]})
+                'name':[f'{workbook_test_name} Rsdl', 0, i, 0, i],
+                'categories': [f'{workbook_test_name} Rsdl', 1, 0, len(residuals_df), 0],
+                'values': [f'{workbook_test_name} Rsdl', 1, i, len(residuals_df), i]})
 
         # Set chart title and labels
         chart.set_title({'name': 'Residuals scatter plot'})
@@ -450,9 +462,9 @@ def export_to_excel(g_df,test_name,coeff_df,summary_df,residuals_df,path,forecas
         # Insert the chart into the worksheet
         worksheet.insert_chart('F2', chart)
 
-        forecast_df.to_excel(writer, sheet_name=f'{test_name} Predicted', index=True)
+        forecast_df.to_excel(writer, sheet_name=f'{workbook_test_name} Predicted', index=True)
 
-        worksheet = writer.sheets[f'{test_name} Predicted']
+        worksheet = writer.sheets[f'{workbook_test_name} Predicted']
 
         # Define the chart object
         chart = workbook.add_chart({'type': 'line'})
@@ -462,9 +474,9 @@ def export_to_excel(g_df,test_name,coeff_df,summary_df,residuals_df,path,forecas
         # chart.add_series({'values': f'{test_name} Rsdl!$B$1:$B$5'})
         for i in range(1,forecast_df_cols+1):
             chart.add_series({
-                'name':[f'{test_name} Predicted', 0, i, 0, i],
-                'categories': [f'{test_name} Predicted', 1, 0, len(forecast_df), 0],
-                'values': [f'{test_name} Predicted', 1, i, len(forecast_df), i]})
+                'name':[f'{workbook_test_name} Predicted', 0, i, 0, i],
+                'categories': [f'{workbook_test_name} Predicted', 1, 0, len(forecast_df), 0],
+                'values': [f'{workbook_test_name} Predicted', 1, i, len(forecast_df), i]})
 
         # Set chart title and labels
         chart.set_title({'name': 'Predicted traffic plot'})
@@ -474,4 +486,7 @@ def export_to_excel(g_df,test_name,coeff_df,summary_df,residuals_df,path,forecas
         # Insert the chart into the worksheet
         worksheet.insert_chart('I2', chart)
 
-        g_df.to_excel(writer, sheet_name=f'{test_name} growth rates', index=True)
+        g_df.to_excel(writer, sheet_name=f'{workbook_test_name} growth rates', index=True)
+
+
+

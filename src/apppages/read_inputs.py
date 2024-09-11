@@ -124,7 +124,7 @@ def data_selection_buttons(
         None
     """
     with container:
-        st.header("Datatable")
+        st.header("Data")
         filt_df = create_and_show_df(
             st.session_state.df,
             slider_value_start,

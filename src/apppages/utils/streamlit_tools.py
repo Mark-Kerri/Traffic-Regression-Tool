@@ -52,7 +52,7 @@ def create_and_show_df(df, slider_value_start, slider_value_end, x_sel, y_sel,di
 
     filt_df = df[slider_value_start : slider_value_end + 1][filt_cols]
     if display_df:
-        with st.expander("Growth rates table"):
+        with st.expander("Expand to show data"):
             st.dataframe(data=filt_df)
 
     return filt_df

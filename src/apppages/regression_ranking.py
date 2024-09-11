@@ -171,7 +171,6 @@ def main():
                                 )
                                 st.session_state.reg_residuals[test_name] = model.resid
                                 st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
-
                                 st.session_state.n_counter += 1
                     except ValueError:
                         st.error(
@@ -266,7 +265,7 @@ def main():
                 ).transpose()
                 st.subheader("Regression coefficients for selected test")
                 coeff_df = st.data_editor(coeff_df, num_rows="dynamic")
-                print(coeff_df)
+                # print(coeff_df)
             except KeyError:
                 st.write("")
 
@@ -304,7 +303,7 @@ def main():
                 )
             if st.button("Display growth rates table"):
 
-                st.header("Growth rates:")
+                st.header("Growth rates")
                 # growth rate of GDP
                 st.dataframe(st.session_state.g_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1])
         # simplify the variable equal to the growth df columns of the regression test to be analysed
@@ -429,11 +428,12 @@ def main():
                 "Forecasted y"
             ].fillna(st.session_state.bc_df["Predicted y"])
 
+
             st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
                 st.session_state.y_sel
             ]
             if st.button("Display forecasted y table"):
-                st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+2])
+                st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd])
                 # st.text(st.session_state.y_sel)
             # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
             # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
@@ -443,7 +443,7 @@ def main():
             ]
 
 
-            st.session_state.bc_plot_df = st.session_state.bc_plot_df[st.session_state.slider_value_start:st.session_state.slider_value_end+2]
+            st.session_state.bc_plot_df = st.session_state.bc_plot_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd]
 
             fig = px.line(
                 st.session_state.bc_plot_df,

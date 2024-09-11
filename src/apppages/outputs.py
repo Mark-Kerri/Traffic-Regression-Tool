@@ -52,7 +52,6 @@ def main():
             base_year_idx_number = st.session_state.bc_df["index"][
                 st.session_state.bc_df["index"] == base_year_idx[-1]
             ].index[0]
-
             # Copy base year value(s) from user slider selection to the predicted_y
             for base_year_val in base_year_idx:
                 st.session_state.bc_df.loc[
@@ -114,7 +113,6 @@ def main():
                 st.session_state.bc_df.loc[
                     st.session_state.bc_df["index"] == base_year_val, "Predicted y"
                 ] = st.session_state.df.loc[base_year_val, st.session_state.y_sel]
-
             # bring back index to be used for x-axis of plots
             st.session_state.bc_df = st.session_state.bc_df.set_index("index")
             # st.session_state.bc_df = st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1]
@@ -143,9 +141,14 @@ def main():
             residuals_df['Fitted values'] = st.session_state.reg_fitted_vals[test]
             residuals_df['Actuals'] = residuals_df['Residuals'] + residuals_df['Fitted values']
             # to be updated when each bc_df is saved in a dictionary  for each test?
-            forecast_df = st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+2]
+            forecast_df = st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd]
             forecast_df = forecast_df[["Forecasted y", st.session_state.y_sel]]
-            export_to_excel(g_df,test,coeff_df_orig,summary_df,residuals_df,st.session_state.output_path,forecast_df)
+
+            base_year_datapoints = forecast_df.index[st.session_state.base_slider_value_start:st.session_state.base_slider_value_end+1+st.session_state.prd]
+
+            # st.text(st.session_state.bc_df)
+
+            export_to_excel(base_year_datapoints,g_df,test,coeff_df_orig,summary_df,residuals_df,st.session_state.output_path,forecast_df)
         # export_to_excel(coeff_df,df,reg_summary,residuals_df,path)
 
 if __name__ == "__page__":

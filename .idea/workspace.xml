@@ -6,9 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="14abbf4e-b44d-4ffd-8d52-2d0e6f6668ef" name="Changes" comment="Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/App.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apppages/outputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/outputs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/apppages/read_inputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/read_inputs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/apppages/regression_ranking.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/regression_ranking.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apppages/utils/excel.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/utils/excel.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/apppages/utils/streamlit_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/utils/streamlit_tools.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -39,14 +40,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/FIeridis/AppData/Local/Programs/Python/Python312/Scripts/black.exe&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "C:/Users/FIeridis/AppData/Local/Programs/Python/Python312/Scripts/black.exe",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  },
+  "keyToStringList": {
+    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+      "Python",
+      "PLAIN_TEXT"
+    ]
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\apppages" />
