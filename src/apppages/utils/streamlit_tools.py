@@ -160,3 +160,9 @@ def growth_list(elements):
     list: A list of strings with 'g: ' prepended to each variable name.
     """
     return [f"g: {element}" for element in elements]
+
+
+def calc_elast_df(test,coeff_df,regr_tests_and_cols_dict,g_df):
+    reg_cols = regr_tests_and_cols_dict[test]
+
+    elast_df = (g_df[reg_cols] ** coeff_df[reg_cols].iloc[0][reg_cols])

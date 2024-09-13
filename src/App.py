@@ -134,6 +134,17 @@ def initialise_session_state():
                 'darkred',  # Dark Red
                 '#A7C7E7'  # Light Gray-Blue (using hex code)
             ]
+    if "coeff_dict" not in st.session_state:
+        st.session_state.coeff_dict = {}
+    if "elast_dict" not in st.session_state:
+        st.session_state.elast_dict = {}
+    if "bc_dict" not in st.session_state:
+        st.session_state.bc_dict = {}
+    if "test_list" not in st.session_state:
+        st.session_state.test_list = None
+    if "bc_plot_dict" not in st.session_state:
+        st.session_state.bc_plot_dict = {}
+
 def main():
     """Run main function to render the Streamlit app interface."""
     initialise_session_state()

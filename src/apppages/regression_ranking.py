@@ -58,7 +58,7 @@ def main():
         # Option to add a constant to the regression model
         # st.session_state.constant_sel = st.selectbox("Add constant?:", options=["Yes", "No"])
         st.session_state.constant_sel = st.checkbox("Include constant", value=True)
-        st.session_state.growth_df_checkbox = st.checkbox("Display growth rates table", value=False)
+        # st.session_state.growth_df_checkbox = st.checkbox("Display growth rates table", value=False)
 
         # Slider for selecting the time range to analyze
         st.session_state.slider_value_start, st.session_state.slider_value_end = (
@@ -69,7 +69,22 @@ def main():
                 format_func=stringify_g_df,
             )
         )
-
+        st.session_state.base_slider_value_start, st.session_state.base_slider_value_end = (
+            st.select_slider(
+                "Select the range of points to be used as base year",
+                options=range(0, len(st.session_state.df)),
+                value=(0, len(st.session_state.df) - 1),
+                # on_change=visualise_data,
+                args=(
+                    st.session_state.df,
+                    st.session_state.base_slider_value_start,
+                    st.session_state.base_slider_value_end,
+                ),
+                format_func=stringify,
+            )
+        )
+        base_year_start = st.session_state.base_slider_value_start
+        base_year_end = st.session_state.base_slider_value_end
         # Button to update the dataframe based on the selected time range and variables
         if st.button("Run all regressions"):
             st.session_state.r_df = create_and_show_df(
@@ -78,7 +93,7 @@ def main():
                 st.session_state.slider_value_end,
                 st.session_state.x_sel_g,
                 st.session_state.y_sel_g,
-                display_df=st.session_state.growth_df_checkbox,
+                display_df=True,
             )
             # start a new outputs df and reset(?) all relevant session_state variables
             st.session_state.model_regressions_list = []
@@ -89,13 +104,20 @@ def main():
                 columns=st.session_state.x_sel_g
             )
             st.session_state.model_regressions_df["const"] = None
+            st.session_state.model_regressions_df["r_squared"] = None
+            st.session_state.model_regressions_df["Test name"] = None
+
             # st.text(x_cols)
 
             # Try to fit a linear regression model and display the results
             st.session_state.n_counter = 0
             for x_elements in range(len(x_cols)):
                 x_combinations = list(itertools.combinations(x_cols, x_elements))
-                for x_combo in x_combinations:
+                for i, x_combo in enumerate(x_combinations):
+                    # if st.session_state.n_counter ==2:
+                    #     break
+                    #     break
+
                     st.session_state.x_sel_reg = [
                         x for x in st.session_state.x_sel_g if x in list(x_combo)
                     ]
@@ -152,7 +174,32 @@ def main():
                                         in st.session_state.model_regressions_df.columns
                                     }
                                 ]
+                                # print(model.params)
+                                # print(filtered_dicts)
+                                # print( model.rsquared_adj)
+                                # st.session_state.model_regressions_df["r_squared"] = (
+                                #     st.session_state.model_r_squared
+                                # )
+                                # st.session_state.model_regressions_df["Test name"] = (
+                                #     st.session_state.model_regressions_list
+                                # )
 
+                                # print(model.rsquared_adj)
+                                # print(filtered_dicts)
+                                filtered_dicts[0]["r_squared"] = model.rsquared_adj
+                                filtered_dicts[0]["Test name"] = test_name
+                                # print(filtered_dicts)
+
+                                # columns = ["Test name"]+ ["r_squared"] + [
+                                #     col
+                                #     for col in st.session_state.model_regressions_df.columns
+                                #     if (col != "r_squared") or (col!= "Test name")
+                                # ]
+                                # print(columns)
+                                # st.session_state.model_regressions_df = (
+                                #     st.session_state.model_regressions_df[columns]
+                                # )
+                                # print(st.session_state.model_regressions_df)
                                 # Append the row
                                 st.session_state.model_regressions_df = pd.concat(
                                     [
@@ -171,37 +218,36 @@ def main():
                                 )
                                 st.session_state.reg_residuals[test_name] = model.resid
                                 st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
+
+                                if x_elements == len(x_cols) - 1 and i == len(x_combinations) - 1:
+
+                                    if "Test name" in st.session_state.model_regressions_df.columns:
+                                        st.session_state.model_regressions_df = (
+                                            st.session_state.model_regressions_df.set_index("Test name")
+                                        )
+                                    st.session_state.model_regressions_df = (
+                                        st.session_state.model_regressions_df.sort_values(
+                                            "r_squared", ascending=False
+                                        )
+                                    )
+
+
                                 st.session_state.n_counter += 1
                     except ValueError:
                         st.error(
                             "Please make sure you chose at least one independent (x) variable."
                         )
-                    except KeyError:
-                        st.error(
-                            "Please click the Update Dataframe button to reload the data."
-                        )
-            st.session_state.model_regressions_df["r_squared"] = (
-                st.session_state.model_r_squared
-            )
-            st.session_state.model_regressions_df["Test name"] = (
-                st.session_state.model_regressions_list
-            )
-            columns = ["r_squared"] + [
-                col
-                for col in st.session_state.model_regressions_df.columns
-                if col != "r_squared"
-            ]
-            st.session_state.model_regressions_df = (
-                st.session_state.model_regressions_df[columns]
-            )
-            st.session_state.model_regressions_df = (
-                st.session_state.model_regressions_df.set_index("Test name")
-            )
-            st.session_state.model_regressions_df = (
-                st.session_state.model_regressions_df.sort_values(
-                    "r_squared", ascending=False
-                )
-            )
+                    # except KeyError:
+                    #     st.error(
+                    #         "Please click the Update Dataframe button to reload the data."
+                    #     )
+            # st.session_state.model_regressions_df["r_squared"] = (
+            #     st.session_state.model_r_squared
+            # )
+            # st.session_state.model_regressions_df["Test name"] = (
+            #     st.session_state.model_regressions_list
+            # )
+
         if st.session_state.model_regressions_df is not None:
             st.subheader(
                 f"Regression outputs for {st.session_state.y_sel_g} "
@@ -221,6 +267,7 @@ def main():
                 )
             except IndexError:
                 st.write(":red[**Please select a test from the table above!**]")
+
         if st.session_state.reg_sel:
             with st.expander("Regression summary table"):
                 st.text(st.session_state.regression_rank_dict[st.session_state.reg_sel])
@@ -250,215 +297,219 @@ def main():
                 # fig_inf.tight_layout(pad=1.0)
                 # st.plotly_chart(fig_inf)
 
-        # base year
-        # print(st.session_state.df.head())
-        # print(st.session_state.y_sel)
-        # print(
-        #     st.session_state.df[st.session_state.y_sel][base_year_start: base_year_end + 1]
-        # )
-
         # use the test name entered above to find the parameters from the equivalent test
+
+
+        # create a list of test to loop through and calculate all forecasts from
         if st.session_state.model_regressions_df is not None:
-            try:
-                coeff_df = pd.DataFrame(
-                    st.session_state.model_regressions_df.loc[st.session_state.reg_sel]
-                ).transpose()
-                st.subheader("Regression coefficients for selected test")
-                coeff_df = st.data_editor(coeff_df, num_rows="dynamic")
-                # print(coeff_df)
-            except KeyError:
-                st.write("")
+            st.session_state.test_list = st.session_state.model_regressions_df.index.to_list()
+        # st.text(st.session_state.test_list)
 
         # pasted backcast code below to be adapted in this page
-        st.session_state.y_sel = st.session_state.y_sel_g.split("g: ")[1]
 
-        if st.session_state.selected_regression is not None:
-            st.session_state.base_slider_value_start, st.session_state.base_slider_value_end = (
-                st.select_slider(
-                    "Select the range of points to be used as base year",
-                    options=range(0, len(st.session_state.df)),
-                    value=(0, len(st.session_state.df) - 1),
-                    # on_change=visualise_data,
-                    args=(
-                        st.session_state.df,
-                        st.session_state.base_slider_value_start,
-                        st.session_state.base_slider_value_end,
-                    ),
-                    format_func=stringify,
-                )
-            )
-            base_year_start = st.session_state.base_slider_value_start
-            base_year_end = st.session_state.base_slider_value_end
-        # print(st.session_state.g_df.columns)
-        if (
-            st.session_state.base_slider_value_start != 0
-            or st.session_state.base_slider_value_end != -1
-        ):
-            if st.button("Display base year data"):
-                st.header("Base year data:")
-                st.dataframe(
-                    st.session_state.df[st.session_state.y_sel][
+            st.session_state.y_sel = st.session_state.y_sel_g.split("g: ")[1]
+            for test in st.session_state.test_list:
+                if st.session_state.model_regressions_df is not None:
+                    try:
+                        coeff_df = pd.DataFrame(
+                            st.session_state.model_regressions_df.loc[test]
+                        ).transpose()
+
+                        st.session_state.coeff_dict[test] = coeff_df
+                        # print(coeff_df)
+                    except KeyError:
+                        st.write("")
+                # if st.session_state.selected_regression is not None:
+                #     print(test)
+                    # print(st.session_state.reg_sel)
+                # print(st.session_state.g_df.columns)
+                # if (
+                #     st.session_state.base_slider_value_start != 0
+                #     or st.session_state.base_slider_value_end != -1
+                # ):
+                #     if st.button("Display base year data"):
+                #         st.header("Base year data:")
+                #         st.dataframe(
+                #             st.session_state.df[st.session_state.y_sel][
+                #                 base_year_start : base_year_end + 1
+                #             ]
+                #         )
+                #     if st.button("Display growth rates table"):
+                #
+                #         st.header("Growth rates")
+                #         # growth rate of GDP
+                #         st.dataframe(st.session_state.g_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1])
+                # simplify the variable equal to the growth df columns of the regression test to be analysed
+                if (
+                    test is not None
+                    and st.session_state.regr_tests_and_cols_dict != {}
+                ):
+                    #TODO: Convert the following into a function - calc_elast_df
+                    reg_cols = st.session_state.regr_tests_and_cols_dict[
+                        test
+                    ]
+
+                    elast_df = (
+                        st.session_state.g_df[reg_cols] ** coeff_df[reg_cols].iloc[0][reg_cols]
+                    )
+                    st.session_state.elast_dict[test] = elast_df
+
+
+                    #TODO: function create_bc_df - inputs: elast_df,prd,df.index,reg_cols,st.session_state.df,
+                    # st.session_state.y_sel,base_year_start, base_year_end
+                    # output should be st.session_state.bc_plot_df
+                    st.session_state.bc_df = pd.DataFrame(
+                        data=elast_df.shift(periods=-st.session_state.prd),
+                        index=st.session_state.df.index,
+                    )
+
+                    # copies the e.g 2012/13 growth rate to 2012 row in bc_df
+                    st.session_state.bc_df[: st.session_state.prd] = elast_df[
+                        : st.session_state.prd
+                    ]
+                    # initialise Combined Growth column
+                    st.session_state.bc_df["Combined Growth"] = 1  # None
+                    for col in reg_cols:
+                        st.session_state.bc_df.loc[
+                            st.session_state.bc_df.index[-st.session_state.prd :], col
+                        ] = 1
+                    st.session_state.bc_df = st.session_state.bc_df.reset_index()
+
+                    st.session_state.bc_df["Predicted y"] = None
+                    st.session_state.bc_df["Forecasted y"] = None
+
+                    # base year value
+                    base_year = st.session_state.df[st.session_state.y_sel][
                         base_year_start : base_year_end + 1
                     ]
+                    base_year_idx = base_year.index.to_list()
+                    base_year_idx_number = st.session_state.bc_df["index"][
+                        st.session_state.bc_df["index"] == base_year_idx[-1]
+                    ].index[0]
+
+                    # Copy base year value(s) from user slider selection to the predicted_y
+                    for base_year_val in base_year_idx:
+                        st.session_state.bc_df.loc[
+                            st.session_state.bc_df["index"] == base_year_val, "Predicted y"
+                        ] = st.session_state.df.loc[base_year_val, st.session_state.y_sel]
+
+                    # loop through the rows starting from the first one to be predicted going up one timestep at a time
+                    for i in range(
+                        len(st.session_state.bc_df) - st.session_state.prd - 1,
+                        -1,
+                        -st.session_state.prd,
+                    ):
+                        # loop through growth (X) columns and calculate Combined Growth (combination of X columns together)
+                        # backwards in time
+                        for col in reg_cols:
+                            for n in range(st.session_state.prd):
+                                st.session_state.bc_df.loc[i - n, "Combined Growth"] = (
+                                    st.session_state.bc_df.loc[i - n, "Combined Growth"]
+                                    * st.session_state.bc_df.loc[i - n, col]
+                                )
+                                # Back-casting is only calculated for any time before base year
+                                if st.session_state.bc_df["index"][i] < base_year_idx[0]:
+                                    st.session_state.bc_df.loc[i - n, "Predicted y"] = (
+                                        st.session_state.bc_df.loc[
+                                            i - n + st.session_state.prd, "Predicted y"
+                                        ]
+                                        / st.session_state.bc_df.loc[i - n, "Combined Growth"]
+                                    )
+
+                    # this could have been potentially done in a better way, but it works.
+                    # Go through rows after base year and forecast growth using values from previous year and growth rate
+                    for i in range(
+                        base_year_idx_number + 1,
+                        len(st.session_state.bc_df),
+                        st.session_state.prd,
+                    ):
+                        for n in range(st.session_state.prd):
+                            if i > base_year_idx_number:
+                                try:
+                                    st.session_state.bc_df.loc[i + n, "Forecasted y"] = (
+                                        st.session_state.bc_df.loc[
+                                            i + n - st.session_state.prd, "Predicted y"
+                                        ]
+                                        * st.session_state.bc_df.loc[
+                                            i + n - st.session_state.prd, "Combined Growth"
+                                        ]
+                                    )
+                                except TypeError:
+                                    st.session_state.bc_df.loc[i + n, "Forecasted y"] = (
+                                        st.session_state.bc_df.loc[
+                                            i + n - st.session_state.prd, "Forecasted y"
+                                        ]
+                                        * st.session_state.bc_df.loc[
+                                            i + n - st.session_state.prd, "Combined Growth"
+                                        ]
+                                    )
+
+                    # enforce base year values to be equal to the actuals
+                    for base_year_val in base_year_idx:
+                        st.session_state.bc_df.loc[
+                            st.session_state.bc_df["index"] == base_year_val, "Predicted y"
+                        ] = st.session_state.df.loc[base_year_val, st.session_state.y_sel]
+
+                    # bring back index to be used for x-axis of plots
+                    st.session_state.bc_df = st.session_state.bc_df.set_index("index")
+                    # st.session_state.bc_df = st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1]
+                    # convert to float for plotting
+                    st.session_state.bc_df["Predicted y"] = st.session_state.bc_df[
+                        "Predicted y"
+                    ].astype(float)
+                    st.session_state.bc_df["Forecasted y"] = st.session_state.bc_df[
+                        "Forecasted y"
+                    ].astype(float)
+
+                    # fill the forecasted y column nans with values from the predicted y column
+                    st.session_state.bc_df["Forecasted y"] = st.session_state.bc_df[
+                        "Forecasted y"
+                    ].fillna(st.session_state.bc_df["Predicted y"])
+
+
+                    st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
+                        st.session_state.y_sel
+                    ]
+                    # if st.button("Display forecasted y table"):
+                    #     st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd])
+                        # st.text(st.session_state.y_sel)
+                    # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
+                    # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
+                    #   or create a new visualisation function
+                    st.session_state.bc_plot_df = st.session_state.bc_df[
+                        ["Forecasted y", st.session_state.y_sel]
+                    ]
+                    st.session_state.bc_plot_df = st.session_state.bc_plot_df[
+                                                  st.session_state.slider_value_start:st.session_state.slider_value_end + 1 + st.session_state.prd]
+
+
+                    st.session_state.bc_dict[test] = st.session_state.bc_plot_df
+
+            if st.session_state.reg_sel is not None:
+                st.subheader("Regression coefficients for selected test")
+                coeff_df = st.data_editor(st.session_state.coeff_dict[st.session_state.reg_sel], num_rows="dynamic")
+                # st.session_state.coeff_dict[st.session_state.reg_sel] = coeff_df
+                #TODO: run a function here that updates bc_df
+
+
+                st.header("Backcast:")
+
+                st.session_state.bc_plot_df = st.session_state.bc_dict[st.session_state.reg_sel]
+                fig = px.line(
+                    st.session_state.bc_plot_df,
+                    x=st.session_state.bc_plot_df.index,
+                    y=st.session_state.bc_plot_df.columns,
+                    title=f"Forecast on historic data of {st.session_state.y_sel}",
+                    color_discrete_sequence=st.session_state.custom_colors
                 )
-            if st.button("Display growth rates table"):
+                fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
+                st.plotly_chart(fig)
 
-                st.header("Growth rates")
-                # growth rate of GDP
-                st.dataframe(st.session_state.g_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1])
-        # simplify the variable equal to the growth df columns of the regression test to be analysed
-        if (
-            st.session_state.reg_sel is not None
-            and st.session_state.regr_tests_and_cols_dict != {}
-        ):
-            reg_cols = st.session_state.regr_tests_and_cols_dict[
-                st.session_state.reg_sel
-            ]
-
-            elast_df = (
-                st.session_state.g_df[reg_cols] ** coeff_df[reg_cols].iloc[0][reg_cols]
-            )
-
-            st.header("Backcast:")
-            st.session_state.bc_df = pd.DataFrame(
-                data=elast_df.shift(periods=-st.session_state.prd),
-                index=st.session_state.df.index,
-            )
-
-            # copies the e.g 2012/13 growth rate to 2012 row in bc_df
-            st.session_state.bc_df[: st.session_state.prd] = elast_df[
-                : st.session_state.prd
-            ]
-            # initialise Combined Growth column
-            st.session_state.bc_df["Combined Growth"] = 1  # None
-            for col in reg_cols:
-                st.session_state.bc_df.loc[
-                    st.session_state.bc_df.index[-st.session_state.prd :], col
-                ] = 1
-            st.session_state.bc_df = st.session_state.bc_df.reset_index()
-
-            st.session_state.bc_df["Predicted y"] = None
-            st.session_state.bc_df["Forecasted y"] = None
-
-            # base year value
-            base_year = st.session_state.df[st.session_state.y_sel][
-                base_year_start : base_year_end + 1
-            ]
-            base_year_idx = base_year.index.to_list()
-            base_year_idx_number = st.session_state.bc_df["index"][
-                st.session_state.bc_df["index"] == base_year_idx[-1]
-            ].index[0]
-
-            # Copy base year value(s) from user slider selection to the predicted_y
-            for base_year_val in base_year_idx:
-                st.session_state.bc_df.loc[
-                    st.session_state.bc_df["index"] == base_year_val, "Predicted y"
-                ] = st.session_state.df.loc[base_year_val, st.session_state.y_sel]
-
-            # loop through the rows starting from the first one to be predicted going up one timestep at a time
-            for i in range(
-                len(st.session_state.bc_df) - st.session_state.prd - 1,
-                -1,
-                -st.session_state.prd,
-            ):
-                # loop through growth (X) columns and calculate Combined Growth (combination of X columns together)
-                # backwards in time
-                for col in reg_cols:
-                    for n in range(st.session_state.prd):
-                        st.session_state.bc_df.loc[i - n, "Combined Growth"] = (
-                            st.session_state.bc_df.loc[i - n, "Combined Growth"]
-                            * st.session_state.bc_df.loc[i - n, col]
-                        )
-                        # Back-casting is only calculated for any time before base year
-                        if st.session_state.bc_df["index"][i] < base_year_idx[0]:
-                            st.session_state.bc_df.loc[i - n, "Predicted y"] = (
-                                st.session_state.bc_df.loc[
-                                    i - n + st.session_state.prd, "Predicted y"
-                                ]
-                                / st.session_state.bc_df.loc[i - n, "Combined Growth"]
-                            )
-
-            # this could have been potentially done in a better way, but it works.
-            # Go through rows after base year and forecast growth using values from previous year and growth rate
-            for i in range(
-                base_year_idx_number + 1,
-                len(st.session_state.bc_df),
-                st.session_state.prd,
-            ):
-                for n in range(st.session_state.prd):
-                    if i > base_year_idx_number:
-                        try:
-                            st.session_state.bc_df.loc[i + n, "Forecasted y"] = (
-                                st.session_state.bc_df.loc[
-                                    i + n - st.session_state.prd, "Predicted y"
-                                ]
-                                * st.session_state.bc_df.loc[
-                                    i + n - st.session_state.prd, "Combined Growth"
-                                ]
-                            )
-                        except TypeError:
-                            st.session_state.bc_df.loc[i + n, "Forecasted y"] = (
-                                st.session_state.bc_df.loc[
-                                    i + n - st.session_state.prd, "Forecasted y"
-                                ]
-                                * st.session_state.bc_df.loc[
-                                    i + n - st.session_state.prd, "Combined Growth"
-                                ]
-                            )
-
-            # enforce base year values to be equal to the actuals
-            for base_year_val in base_year_idx:
-                st.session_state.bc_df.loc[
-                    st.session_state.bc_df["index"] == base_year_val, "Predicted y"
-                ] = st.session_state.df.loc[base_year_val, st.session_state.y_sel]
-
-            # bring back index to be used for x-axis of plots
-            st.session_state.bc_df = st.session_state.bc_df.set_index("index")
-            # st.session_state.bc_df = st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1]
-            # convert to float for plotting
-            st.session_state.bc_df["Predicted y"] = st.session_state.bc_df[
-                "Predicted y"
-            ].astype(float)
-            st.session_state.bc_df["Forecasted y"] = st.session_state.bc_df[
-                "Forecasted y"
-            ].astype(float)
-
-            # fill the forecasted y column nans with values from the predicted y column
-            st.session_state.bc_df["Forecasted y"] = st.session_state.bc_df[
-                "Forecasted y"
-            ].fillna(st.session_state.bc_df["Predicted y"])
-
-
-            st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
-                st.session_state.y_sel
-            ]
-            if st.button("Display forecasted y table"):
-                st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd])
-                # st.text(st.session_state.y_sel)
-            # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
-            # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
-            #   or create a new visualisation function
-            st.session_state.bc_plot_df = st.session_state.bc_df[
-                ["Forecasted y", st.session_state.y_sel]
-            ]
-
-
-            st.session_state.bc_plot_df = st.session_state.bc_plot_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd]
-
-            fig = px.line(
-                st.session_state.bc_plot_df,
-                x=st.session_state.bc_plot_df.index,
-                y=st.session_state.bc_plot_df.columns,
-                title=f"Forecast on historic data of {st.session_state.y_sel}",
-                color_discrete_sequence=st.session_state.custom_colors
-            )
-            fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
-            st.plotly_chart(fig)
-            if st.button("Export forecast as html"):
-                fig.write_html(os.path.join(st.session_state.output_path,f"Forecast of {st.session_state.y_sel[2:]} "
-                                                                     f"({st.session_state.bc_plot_df.index[0]} "
-                                                                     f"-{st.session_state.bc_plot_df.index[-1]}).html")
-                           ) # Save as HTML
+                if st.button("Export forecast as html"):
+                    fig.write_html(os.path.join(st.session_state.output_path,f"Forecast of {st.session_state.y_sel[2:]} "
+                                                                         f"({st.session_state.bc_plot_df.index[0]} "
+                                                                         f"-{st.session_state.bc_plot_df.index[-1]}).html")
+                               ) # Save as HTML
 
     else:
         st.subheader(

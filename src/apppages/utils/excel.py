@@ -411,7 +411,7 @@ def spreadsheet_to_df(input_file_path):
 
 # def export_to_excel(coeff_df,df,summary_df,residuals_df,path):
 
-def export_to_excel(base_year_datapoints,g_df,test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
+def export_to_excel(regressions_df,base_year_datapoints,g_df,test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
 
     # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
     workbook_test_name = test_name
@@ -423,9 +423,12 @@ def export_to_excel(base_year_datapoints,g_df,test_name,coeff_df,summary_df,resi
     forecast_df_cols = len(forecast_df.columns)
     with pd.ExcelWriter(os.path.join(path,f'{current_timestamp}_{workbook_test_name}_output.xlsx'), engine='xlsxwriter') as writer:
 
+
+        # all regressions
+        regressions_df.to_excel(writer, sheet_name=f'All regressions', index=True)
         # add metadata
         metadata = pd.DataFrame(data=base_year_datapoints)
-        metadata.to_excel(writer, sheet_name=f'Metadata', index=True)
+        metadata.to_excel(writer, sheet_name=f'Base year', index=False)
 
         # Write each dataframe to a different worksheet.
         coeff_df.to_excel(writer, sheet_name=f'{workbook_test_name} Coeffs', index=True)

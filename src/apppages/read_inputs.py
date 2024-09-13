@@ -27,11 +27,13 @@ def main():
     st.header("Upload a Completed Template:")
 
     input_file_path = st.text_input(
-        "Enter the full file path (without quotes):",
+        "Enter the full file path:",
         value=st.session_state.inputs_file_path,
         # value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
     )
-
+    if input_file_path is not None:
+        if input_file_path[0] == '"':
+            input_file_path = input_file_path.replace('"', '')
     if st.button("Read spreadsheet"):
         (
             st.session_state.df,
