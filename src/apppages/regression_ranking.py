@@ -101,7 +101,20 @@ def main():
                     format_func=stringify_l_df,
                 )
             )
-            
+            st.session_state.base_slider_value_start, st.session_state.base_slider_value_end = (
+                st.select_slider(
+                    "Select the range of points to be used as base year",
+                    options=range(0, len(st.session_state.df)),
+                    value=(0, len(st.session_state.df) - 1),
+                    # on_change=visualise_data,
+                    args=(
+                        st.session_state.df,
+                        st.session_state.base_slider_value_start,
+                        st.session_state.base_slider_value_end,
+                    ),
+                    format_func=stringify,
+                )
+            )
         base_year_start = st.session_state.base_slider_value_start
         base_year_end = st.session_state.base_slider_value_end
         # Button to update the dataframe based on the selected time range and variables
@@ -420,7 +433,10 @@ def main():
                     base_year = st.session_state.df[st.session_state.y_sel][
                         base_year_start : base_year_end + 1
                     ]
+                    # print(base_year)
+
                     base_year_idx = base_year.index.to_list()
+                    # print(base_year_idx)
                     base_year_idx_number = st.session_state.bc_df["index"][
                         st.session_state.bc_df["index"] == base_year_idx[-1]
                     ].index[0]
@@ -430,97 +446,99 @@ def main():
                         st.session_state.bc_df.loc[
                             st.session_state.bc_df["index"] == base_year_val, "Predicted y"
                         ] = st.session_state.df.loc[base_year_val, st.session_state.y_sel]
-
+                    if st.session_state.log_method == False:
                     # loop through the rows starting from the first one to be predicted going up one timestep at a time
-                    for i in range(
-                        len(st.session_state.bc_df) - st.session_state.prd - 1,
-                        -1,
-                        -st.session_state.prd,
-                    ):
-                        # loop through growth (X) columns and calculate Combined Growth (combination of X columns together)
-                        # backwards in time
-                        for col in reg_cols:
+                        for i in range(
+                            len(st.session_state.bc_df) - st.session_state.prd - 1,
+                            -1,
+                            -st.session_state.prd,
+                        ):
+                            # loop through growth (X) columns and calculate Combined Growth (combination of X columns together)
+                            # backwards in time
+                            for col in reg_cols:
+                                for n in range(st.session_state.prd):
+                                    st.session_state.bc_df.loc[i - n, "Combined Growth"] = (
+                                        st.session_state.bc_df.loc[i - n, "Combined Growth"]
+                                        * st.session_state.bc_df.loc[i - n, col]
+                                    )
+                                    # Back-casting is only calculated for any time before base year
+                                    if st.session_state.bc_df["index"][i] < base_year_idx[0]:
+                                        st.session_state.bc_df.loc[i - n, "Predicted y"] = (
+                                            st.session_state.bc_df.loc[
+                                                i - n + st.session_state.prd, "Predicted y"
+                                            ]
+                                            / st.session_state.bc_df.loc[i - n, "Combined Growth"]
+                                        )
+
+                        # this could have been potentially done in a better way, but it works.
+                        # Go through rows after base year and forecast growth using values from previous year and growth rate
+                        for i in range(
+                            base_year_idx_number + 1,
+                            len(st.session_state.bc_df),
+                            st.session_state.prd,
+                        ):
                             for n in range(st.session_state.prd):
-                                st.session_state.bc_df.loc[i - n, "Combined Growth"] = (
-                                    st.session_state.bc_df.loc[i - n, "Combined Growth"]
-                                    * st.session_state.bc_df.loc[i - n, col]
-                                )
-                                # Back-casting is only calculated for any time before base year
-                                if st.session_state.bc_df["index"][i] < base_year_idx[0]:
-                                    st.session_state.bc_df.loc[i - n, "Predicted y"] = (
-                                        st.session_state.bc_df.loc[
-                                            i - n + st.session_state.prd, "Predicted y"
-                                        ]
-                                        / st.session_state.bc_df.loc[i - n, "Combined Growth"]
-                                    )
+                                if i > base_year_idx_number:
+                                    try:
+                                        st.session_state.bc_df.loc[i + n, "Forecasted y"] = (
+                                            st.session_state.bc_df.loc[
+                                                i + n - st.session_state.prd, "Predicted y"
+                                            ]
+                                            * st.session_state.bc_df.loc[
+                                                i + n - st.session_state.prd, "Combined Growth"
+                                            ]
+                                        )
+                                    except TypeError:
+                                        st.session_state.bc_df.loc[i + n, "Forecasted y"] = (
+                                            st.session_state.bc_df.loc[
+                                                i + n - st.session_state.prd, "Forecasted y"
+                                            ]
+                                            * st.session_state.bc_df.loc[
+                                                i + n - st.session_state.prd, "Combined Growth"
+                                            ]
+                                        )
 
-                    # this could have been potentially done in a better way, but it works.
-                    # Go through rows after base year and forecast growth using values from previous year and growth rate
-                    for i in range(
-                        base_year_idx_number + 1,
-                        len(st.session_state.bc_df),
-                        st.session_state.prd,
-                    ):
-                        for n in range(st.session_state.prd):
-                            if i > base_year_idx_number:
-                                try:
-                                    st.session_state.bc_df.loc[i + n, "Forecasted y"] = (
-                                        st.session_state.bc_df.loc[
-                                            i + n - st.session_state.prd, "Predicted y"
-                                        ]
-                                        * st.session_state.bc_df.loc[
-                                            i + n - st.session_state.prd, "Combined Growth"
-                                        ]
-                                    )
-                                except TypeError:
-                                    st.session_state.bc_df.loc[i + n, "Forecasted y"] = (
-                                        st.session_state.bc_df.loc[
-                                            i + n - st.session_state.prd, "Forecasted y"
-                                        ]
-                                        * st.session_state.bc_df.loc[
-                                            i + n - st.session_state.prd, "Combined Growth"
-                                        ]
-                                    )
+                        # enforce base year values to be equal to the actuals
+                        for base_year_val in base_year_idx:
+                            st.session_state.bc_df.loc[
+                                st.session_state.bc_df["index"] == base_year_val, "Predicted y"
+                            ] = st.session_state.df.loc[base_year_val, st.session_state.y_sel]
 
-                    # enforce base year values to be equal to the actuals
-                    for base_year_val in base_year_idx:
-                        st.session_state.bc_df.loc[
-                            st.session_state.bc_df["index"] == base_year_val, "Predicted y"
-                        ] = st.session_state.df.loc[base_year_val, st.session_state.y_sel]
+                        # bring back index to be used for x-axis of plots
+                        st.session_state.bc_df = st.session_state.bc_df.set_index("index")
+                        # st.session_state.bc_df = st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1]
+                        # convert to float for plotting
+                        st.session_state.bc_df["Predicted y"] = st.session_state.bc_df[
+                            "Predicted y"
+                        ].astype(float)
+                        st.session_state.bc_df["Forecasted y"] = st.session_state.bc_df[
+                            "Forecasted y"
+                        ].astype(float)
 
-                    # bring back index to be used for x-axis of plots
-                    st.session_state.bc_df = st.session_state.bc_df.set_index("index")
-                    # st.session_state.bc_df = st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1]
-                    # convert to float for plotting
-                    st.session_state.bc_df["Predicted y"] = st.session_state.bc_df[
-                        "Predicted y"
-                    ].astype(float)
-                    st.session_state.bc_df["Forecasted y"] = st.session_state.bc_df[
-                        "Forecasted y"
-                    ].astype(float)
-
-                    # fill the forecasted y column nans with values from the predicted y column
-                    st.session_state.bc_df["Forecasted y"] = st.session_state.bc_df[
-                        "Forecasted y"
-                    ].fillna(st.session_state.bc_df["Predicted y"])
+                        # fill the forecasted y column nans with values from the predicted y column
+                        st.session_state.bc_df["Forecasted y"] = st.session_state.bc_df[
+                            "Forecasted y"
+                        ].fillna(st.session_state.bc_df["Predicted y"])
 
 
-                    st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
-                        st.session_state.y_sel
-                    ]
-                    # if st.button("Display forecasted y table"):
-                    #     st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd])
-                        # st.text(st.session_state.y_sel)
-                    # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
-                    # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
-                    #   or create a new visualisation function
-                    st.session_state.bc_plot_df = st.session_state.bc_df[
-                        ["Forecasted y", st.session_state.y_sel]
-                    ]
-                    st.session_state.bc_plot_df = st.session_state.bc_plot_df[
-                                                  st.session_state.slider_value_start:st.session_state.slider_value_end + 1 + st.session_state.prd]
+                        st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
+                            st.session_state.y_sel
+                        ]
+                        # if st.button("Display forecasted y table"):
+                        #     st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd])
+                            # st.text(st.session_state.y_sel)
+                        # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
+                        # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
+                        #   or create a new visualisation function
+                        st.session_state.bc_plot_df = st.session_state.bc_df[
+                            ["Forecasted y", st.session_state.y_sel]
+                        ]
+                        st.session_state.bc_plot_df = st.session_state.bc_plot_df[
+                                                      st.session_state.slider_value_start:st.session_state.slider_value_end + 1 + st.session_state.prd]
 
-
+                    if st.session_state.log_method == True:
+                        if test == st.session_state.test_list[0]:
+                            st.dataframe(st.session_state.bc_df)
                     st.session_state.bc_dict[test] = st.session_state.bc_plot_df
 
             if st.session_state.reg_sel is not None:
