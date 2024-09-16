@@ -32,8 +32,11 @@ def main():
         # value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
     )
     if input_file_path is not None:
-        if input_file_path[0] == '"':
-            input_file_path = input_file_path.replace('"', '')
+        try:
+            if input_file_path[0] == '"':
+                input_file_path = input_file_path.replace('"', '')
+        except IndexError:
+            pass
     if st.button("Read spreadsheet"):
         (
             st.session_state.df,

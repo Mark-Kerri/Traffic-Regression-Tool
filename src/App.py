@@ -62,6 +62,8 @@ def initialise_session_state():
         st.session_state.df_index = None
     if "g_df_idx" not in st.session_state:
         st.session_state.g_df_idx = None
+    if "l_df_idx" not in st.session_state:
+        st.session_state.l_df_idx = None
     if "var_dict" not in st.session_state:
         st.session_state.var_dict = {}
     if "timestep" not in st.session_state:
@@ -77,11 +79,17 @@ def initialise_session_state():
     if "y_sel_g" not in st.session_state:
         st.session_state.y_sel_g = []
     if "x_sel_g" not in st.session_state:
+        st.session_state.x_sel_l = []
+    if "y_sel_l" not in st.session_state:
+        st.session_state.y_sel_l = []
+    if "x_sel_l" not in st.session_state:
         st.session_state.x_sel_g = []
     if "x_sel_reg" not in st.session_state:
         st.session_state.x_sel_reg = []
     if "g_df" not in st.session_state:
         st.session_state.g_df = None
+    if "l_df" not in st.session_state:
+        st.session_state.l_df = None
     if "r_df" not in st.session_state:
         st.session_state.r_df = None
     if "bc_df" not in st.session_state:
@@ -144,6 +152,8 @@ def initialise_session_state():
         st.session_state.test_list = None
     if "bc_plot_dict" not in st.session_state:
         st.session_state.bc_plot_dict = {}
+    if "log_method" not in st.session_state:
+        st.session_state.log_method = False
 
 def main():
     """Run main function to render the Streamlit app interface."""

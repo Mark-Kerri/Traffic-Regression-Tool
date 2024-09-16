@@ -116,7 +116,17 @@ def stringify_g_df(i: int = 0) -> str:
     """
     return st.session_state.g_df_idx[i]
 
+def stringify_l_df(i: int = 0) -> str:
+    """
+    Convert a slider integer index to a corresponding growth dataframe index string.
 
+    Parameters:
+    i (int): The index value from the slider, default is 0.
+
+    Returns:
+    str: The corresponding index string from the growth dataframe.
+    """
+    return st.session_state.l_df_idx[i]
 def growth_df(df):
     """
     Calculate growth rates for variables in the dataframe based on their types.
@@ -136,17 +146,33 @@ def growth_df(df):
         var_type = st.session_state.var_dict[df_col[2:]]
         if var_type == "abs":
             df["g: " + df_col] = df[df_col].pct_change(periods=st.session_state.prd) + 1
+            df["l: " + df_col] = np.log(df[df_col]+1e-10)
+
         elif var_type == "pct_val_or_dummy":
             df["g: " + df_col] = np.exp(df[df_col] - df[df_col].shift(st.session_state.prd))
+            df["l: " + df_col] = df[df_col]
+
         elif var_type == "pct_change":
             df["g: " + df_col] = df[df_col] + 1
+            df["l: " + df_col] = df[df_col] + 1
+
 
     # Filter growth columns and drop rows with all NaN values
     g_cols = [c for c in df.columns if c.startswith("g:")]
+    l_cols = [c for c in df.columns if c.startswith("l:")]
     g_df = df[g_cols].dropna(how="all")
+    l_df = df[l_cols]
     g_df_idx = g_df.index
+    l_df_idx = l_df.index
+    print('')
+    print(l_cols)
+    print('')
+    print(g_df.head())
+    print('')
+    print(l_df.head())
+    print('')
 
-    return g_df, g_df_idx
+    return g_df, g_df_idx,l_df,l_df_idx
 
 
 def growth_list(elements):
@@ -166,3 +192,21 @@ def calc_elast_df(test,coeff_df,regr_tests_and_cols_dict,g_df):
     reg_cols = regr_tests_and_cols_dict[test]
 
     elast_df = (g_df[reg_cols] ** coeff_df[reg_cols].iloc[0][reg_cols])
+    return elast_df
+
+def log_df(df):
+    for df_col in df.columns:
+            var_type = st.session_state.var_dict[df_col[2:]]
+            if var_type == "abs":
+                df["l: " + df_col] = np.log(df[df_col]+1e-10)
+            elif var_type == "pct_val_or_dummy":
+                df["l: " + df_col] = df[df_col]
+            elif var_type == "pct_change":
+                df["l: " + df_col] = df[df_col] + 1
+
+    # Filter growth columns and drop rows with all NaN values
+    g_cols = [c for c in df.columns if c.startswith("g:")]
+    g_df = df[g_cols].dropna(how="all")
+    g_df_idx = g_df.index
+
+    return g_df, g_df_idx

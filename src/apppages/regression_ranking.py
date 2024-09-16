@@ -12,7 +12,7 @@ import streamlit as st
 import statsmodels.api as sm
 from statsmodels.stats.outliers_influence import OLSInfluence
 import plotly.express as px
-from apppages.utils.streamlit_tools import stringify, growth_df, stringify_g_df, create_and_show_df
+from apppages.utils.streamlit_tools import stringify, growth_df, stringify_g_df, create_and_show_df, stringify_l_df
 import os
 def main():
     """
@@ -38,63 +38,94 @@ def main():
     )
     if st.session_state.df is not None:
         # Load or create growth dataframe if not already available
+        st.session_state.log_method = st.checkbox('Use log methodology',value=True)
         if st.session_state.g_df is None:
-            st.session_state.g_df, st.session_state.g_df_idx = growth_df(
-                st.session_state.df
-            )
-
+            st.session_state.g_df, st.session_state.g_df_idx, st.session_state.l_df, st.session_state.l_df_idx = growth_df(st.session_state.df)
+            # st.text(st.session_state.l_df)
         # Extract independent (x) and dependent (y) variables from the growth dataframe
         st.header("Define Regression Parameters:")
 
         x_cols = [x for x in st.session_state.g_df.columns if x[3] == "x"]
         y_cols = [y for y in st.session_state.g_df.columns if y[3] == "y"]
 
+        y_cols_ln = [y for y in st.session_state.l_df.columns if y[3] == "y"]
+        x_cols_ln = [x for x in st.session_state.l_df.columns if x[3] == "x"]
         # User selects the dependent (y) variable
         st.session_state.y_sel_g = st.selectbox(
             "Choose the dependent (endogenous) variable:", options=y_cols
         )
+
         st.session_state.x_sel_g = x_cols
+        
+        st.session_state.x_sel_l = x_cols_ln
+        st.session_state.y_sel_l = st.selectbox(
+            "Choose the dependent variable:", options=y_cols_ln
+        )
 
         # Option to add a constant to the regression model
         # st.session_state.constant_sel = st.selectbox("Add constant?:", options=["Yes", "No"])
         st.session_state.constant_sel = st.checkbox("Include constant", value=True)
-        # st.session_state.growth_df_checkbox = st.checkbox("Display growth rates table", value=False)
 
-        # Slider for selecting the time range to analyze
-        st.session_state.slider_value_start, st.session_state.slider_value_end = (
-            st.select_slider(
-                "Choose the range of points to be plotted",
-                options=range(0, len(st.session_state.g_df)),
-                value=(0, len(st.session_state.g_df) - 1),
-                format_func=stringify_g_df,
+        if st.session_state.log_method == False:
+
+            # Slider for selecting the time range to analyze
+            st.session_state.slider_value_start, st.session_state.slider_value_end = (
+                st.select_slider(
+                    "Choose the range of points to be plotted",
+                    options=range(0, len(st.session_state.g_df)),
+                    value=(0, len(st.session_state.g_df) - 1),
+                    format_func=stringify_g_df,
+                )
             )
-        )
-        st.session_state.base_slider_value_start, st.session_state.base_slider_value_end = (
-            st.select_slider(
-                "Select the range of points to be used as base year",
-                options=range(0, len(st.session_state.df)),
-                value=(0, len(st.session_state.df) - 1),
-                # on_change=visualise_data,
-                args=(
-                    st.session_state.df,
-                    st.session_state.base_slider_value_start,
-                    st.session_state.base_slider_value_end,
-                ),
-                format_func=stringify,
+            st.session_state.base_slider_value_start, st.session_state.base_slider_value_end = (
+                st.select_slider(
+                    "Select the range of points to be used as base year",
+                    options=range(0, len(st.session_state.df)),
+                    value=(0, len(st.session_state.df) - 1),
+                    # on_change=visualise_data,
+                    args=(
+                        st.session_state.df,
+                        st.session_state.base_slider_value_start,
+                        st.session_state.base_slider_value_end,
+                    ),
+                    format_func=stringify,
+                )
             )
-        )
+        elif st.session_state.log_method == True:
+            # Slider for selecting the time range to analyze
+            st.session_state.slider_value_start, st.session_state.slider_value_end = (
+                st.select_slider(
+                    "Choose the range of points to be plotted",
+                    options=range(0, len(st.session_state.l_df)),
+                    value=(0, len(st.session_state.l_df) - 1),
+                    format_func=stringify_l_df,
+                )
+            )
+            
         base_year_start = st.session_state.base_slider_value_start
         base_year_end = st.session_state.base_slider_value_end
         # Button to update the dataframe based on the selected time range and variables
         if st.button("Run all regressions"):
-            st.session_state.r_df = create_and_show_df(
-                st.session_state.g_df,
-                st.session_state.slider_value_start,
-                st.session_state.slider_value_end,
-                st.session_state.x_sel_g,
-                st.session_state.y_sel_g,
-                display_df=True,
-            )
+            if st.session_state.log_method == False:
+                st.session_state.r_df = create_and_show_df(
+                    st.session_state.g_df,
+                    st.session_state.slider_value_start,
+                    st.session_state.slider_value_end,
+                    st.session_state.x_sel_g,
+                    st.session_state.y_sel_g,
+                    display_df=True,
+                )
+            elif st.session_state.log_method == True:
+                st.session_state.r_df = create_and_show_df(
+                    st.session_state.l_df,
+                    st.session_state.slider_value_start,
+                    st.session_state.slider_value_end,
+                    st.session_state.x_sel_l,
+                    st.session_state.y_sel_l,
+                    display_df=True,
+                )
+                st.session_state.x_sel_g = st.session_state.x_sel_l
+                st.session_state.y_sel_g = st.session_state.y_sel_l
             # start a new outputs df and reset(?) all relevant session_state variables
             st.session_state.model_regressions_list = []
             st.session_state.model_r_squared = []
@@ -107,8 +138,8 @@ def main():
             st.session_state.model_regressions_df["r_squared"] = None
             st.session_state.model_regressions_df["Test name"] = None
 
-            # st.text(x_cols)
-
+            # st.text(st.session_state.x_sel_g)
+            x_cols = st.session_state.x_sel_g
             # Try to fit a linear regression model and display the results
             st.session_state.n_counter = 0
             for x_elements in range(len(x_cols)):
@@ -128,14 +159,14 @@ def main():
                         ):
                             if st.session_state.r_df is not None:
                                 y = st.session_state.r_df[st.session_state.y_sel_g][
-                                    st.session_state.slider_value_start : st.session_state.slider_value_end
+                                    st.session_state.slider_value_start : st.session_state.slider_value_end +1
                                 ]
                                 if st.session_state.constant_sel == True:
                                     x = st.session_state.r_df[
                                         st.session_state.x_sel_reg
                                     ][
                                         st.session_state.slider_value_start : st.session_state.slider_value_end
-                                    ]
+                                    +1]
                                     x = sm.add_constant(
                                         x, prepend=False, has_constant="add"
                                     )
@@ -306,8 +337,15 @@ def main():
         # st.text(st.session_state.test_list)
 
         # pasted backcast code below to be adapted in this page
-
-            st.session_state.y_sel = st.session_state.y_sel_g.split("g: ")[1]
+            if st.session_state.log_method == False:
+                st.session_state.y_sel = st.session_state.y_sel_g.split("g: ")[1]
+            elif st.session_state.log_method == True:
+                st.text(st.session_state.y_sel_g)
+                # st.text(st.session_state.y_sel_g.split("l: ")[1])
+                try:
+                    st.session_state.y_sel = st.session_state.y_sel_g.split("l: ")[1]
+                except IndexError:
+                    pass
             for test in st.session_state.test_list:
                 if st.session_state.model_regressions_df is not None:
                     try:
@@ -350,7 +388,7 @@ def main():
                     ]
 
                     elast_df = (
-                        st.session_state.g_df[reg_cols] ** coeff_df[reg_cols].iloc[0][reg_cols]
+                        st.session_state.r_df[reg_cols] ** coeff_df[reg_cols].iloc[0][reg_cols]
                     )
                     st.session_state.elast_dict[test] = elast_df
 
