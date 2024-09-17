@@ -63,7 +63,7 @@ def main():
     st.header("Growth rates:")
     # growth rate of GDP
     elast_df = (
-        st.session_state.g_df[st.session_state.x_sel_g]
+        st.session_state.log_df[st.session_state.x_sel_g]
         ** edited_df[st.session_state.x_sel_g].iloc[0][st.session_state.x_sel_g]
     )
     st.dataframe(elast_df)

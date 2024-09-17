@@ -1,0 +1,108 @@
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"14abbf4e-b44d-4ffd-8d52-2d0e6f6668ef\" name=\"Changes\" comment=\"Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/apppages/outputs.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/apppages/outputs.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/apppages/read_inputs.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/apppages/read_inputs.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/apppages/regression_ranking.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/apppages/regression_ranking.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/apppages/utils/excel.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/apppages/utils/excel.py\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/apppages/utils/streamlit_tools.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/apppages/utils/streamlit_tools.py\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Python Script\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$\" value=\"develop\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"MarkdownSettingsMigration\">\r\n    <option name=\"stateVersion\" value=\"1\" />\r\n  </component>\r\n  <component name=\"ProjectId\" id=\"2j0RExO2YHHZGHIGqxcWjGBKetC\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"RunOnceActivity.OpenProjectViewOnStart\": \"true\",\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"last_opened_file_path\": \"C:/Users/FIeridis/AppData/Local/Programs/Python/Python312/Scripts/black.exe\",\r\n    \"settings.editor.selected.configurable\": \"com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable\"\r\n  },\r\n  \"keyToStringList\": {\r\n    \"com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File\": [\r\n      \"Python\",\r\n      \"PLAIN_TEXT\"\r\n    ]\r\n  }\r\n}]]></component>\r\n  <component name=\"RecentsManager\">\r\n    <key name=\"CopyFile.RECENT_KEYS\">\r\n      <recent name=\"C:\\Fidias\\Coding-related\\Python\\Traffic-Regression-Tool\\src\\apppages\" />\r\n      <recent name=\"C:\\Fidias\\Coding-related\\Python\\Traffic-Regression-Tool\\src\" />\r\n    </key>\r\n    <key name=\"MoveFile.RECENT_KEYS\">\r\n      <recent name=\"C:\\Fidias\\Coding-related\\Python\\Traffic-Regression-Tool\\src\\apppages\\utils\" />\r\n      <recent name=\"C:\\Fidias\\Coding-related\\Python\\Traffic-Regression-Tool\\src\" />\r\n    </key>\r\n  </component>\r\n  <component name=\"RunManager\" selected=\"Python.streamlit_tools\">\r\n    <configuration name=\"App\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"Traffic-Regression-Tool\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/src\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"C:\\Fidias\\Coding-related\\Python\\Traffic-Regression-Tool\\src\\App.py\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"excel_editor\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"Traffic-Regression-Tool\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/src\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"C:\\Fidias\\Coding-related\\Python\\Traffic-Regression-Tool\\src\\apppages\\utils\\excel_editor.py\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"streamlit_tools\" type=\"PythonConfigurationType\" factoryName=\"Python\" temporary=\"true\" nameIsGenerated=\"true\">\r\n      <module name=\"Traffic-Regression-Tool\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/src\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"C:\\Fidias\\Coding-related\\Python\\Traffic-Regression-Tool\\src\\apppages\\utils\\streamlit_tools.py\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\"Python.streamlit_tools\" />\r\n        <item itemvalue=\"Python.App\" />\r\n        <item itemvalue=\"Python.excel_editor\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"14abbf4e-b44d-4ffd-8d52-2d0e6f6668ef\" name=\"Changes\" comment=\"\" />\r\n      <created>1720521899229</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1720521899229</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"process spreadsheet inputs into df (streamlit_tools.py)\">\r\n      <created>1720545049203</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1720545049203</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"process spreadsheet inputs into df (streamlit_tools.py)\">\r\n      <created>1720545214690</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1720545214690</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00003\" summary=\"Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot\">\r\n      <created>1720615540498</created>\r\n      <option name=\"number\" value=\"00003\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1720615540498</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"4\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"process spreadsheet inputs into df (streamlit_tools.py)\" />\r\n    <MESSAGE value=\"Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot\" />\r\n  </component>\r\n  <component name=\"XDebuggerManager\">\r\n    <breakpoint-manager>\r\n      <breakpoints>\r\n        <line-breakpoint enabled=\"true\" suspend=\"THREAD\" type=\"python-line\">\r\n          <url>file://$PROJECT_DIR$/src/apppages/backcast.py</url>\r\n          <option name=\"timeStamp\" value=\"1\" />\r\n        </line-breakpoint>\r\n      </breakpoints>\r\n    </breakpoint-manager>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 953884be21e79d4d3a7cb078e250c4b9bcbe24fb)
++++ b/.idea/workspace.xml	(date 1726567796058)
+@@ -6,11 +6,6 @@
+   <component name="ChangeListManager">
+     <list default="true" id="14abbf4e-b44d-4ffd-8d52-2d0e6f6668ef" name="Changes" comment="Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/apppages/outputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/outputs.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/apppages/read_inputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/read_inputs.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/apppages/regression_ranking.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/regression_ranking.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/apppages/utils/excel.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/utils/excel.py" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/apppages/utils/streamlit_tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/utils/streamlit_tools.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -27,7 +22,7 @@
+   <component name="Git.Settings">
+     <option name="RECENT_BRANCH_BY_REPOSITORY">
+       <map>
+-        <entry key="$PROJECT_DIR$" value="develop" />
++        <entry key="$PROJECT_DIR$" value="log-method" />
+       </map>
+     </option>
+     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+@@ -40,20 +35,20 @@
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent"><![CDATA[{
+-  "keyToString": {
+-    "RunOnceActivity.OpenProjectViewOnStart": "true",
+-    "RunOnceActivity.ShowReadmeOnStart": "true",
+-    "last_opened_file_path": "C:/Users/FIeridis/AppData/Local/Programs/Python/Python312/Scripts/black.exe",
+-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
++  <component name="PropertiesComponent">{
++  &quot;keyToString&quot;: {
++    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
++    &quot;last_opened_file_path&quot;: &quot;C:/Users/FIeridis/AppData/Local/Programs/Python/Python312/Scripts/black.exe&quot;,
++    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
+   },
+-  "keyToStringList": {
+-    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
+-      "Python",
+-      "PLAIN_TEXT"
++  &quot;keyToStringList&quot;: {
++    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File&quot;: [
++      &quot;Python&quot;,
++      &quot;PLAIN_TEXT&quot;
+     ]
+   }
+-}]]></component>
++}</component>
+   <component name="RecentsManager">
+     <key name="CopyFile.RECENT_KEYS">
+       <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src\apppages" />
+@@ -64,7 +59,7 @@
+       <recent name="C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\src" />
+     </key>
+   </component>
+-  <component name="RunManager" selected="Python.streamlit_tools">
++  <component name="RunManager" selected="Python.discontinued_script_for_regression_on_raw_data">
+     <configuration name="App" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+       <module name="Traffic-Regression-Tool" />
+       <option name="INTERPRETER_OPTIONS" value="" />
+@@ -86,6 +81,27 @@
+       <option name="INPUT_FILE" value="" />
+       <method v="2" />
+     </configuration>
++    <configuration name="discontinued_script_for_regression_on_raw_data" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
++      <module name="Traffic-Regression-Tool" />
++      <option name="INTERPRETER_OPTIONS" value="" />
++      <option name="PARENT_ENVS" value="true" />
++      <envs>
++        <env name="PYTHONUNBUFFERED" value="1" />
++      </envs>
++      <option name="SDK_HOME" value="" />
++      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
++      <option name="IS_MODULE_SDK" value="true" />
++      <option name="ADD_CONTENT_ROOTS" value="true" />
++      <option name="ADD_SOURCE_ROOTS" value="true" />
++      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/discontinued_script_for_regression_on_raw_data.py" />
++      <option name="PARAMETERS" value="" />
++      <option name="SHOW_COMMAND_LINE" value="false" />
++      <option name="EMULATE_TERMINAL" value="false" />
++      <option name="MODULE_MODE" value="false" />
++      <option name="REDIRECT_INPUT" value="false" />
++      <option name="INPUT_FILE" value="" />
++      <method v="2" />
++    </configuration>
+     <configuration name="excel_editor" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+       <module name="Traffic-Regression-Tool" />
+       <option name="INTERPRETER_OPTIONS" value="" />
+@@ -130,6 +146,7 @@
+     </configuration>
+     <recent_temporary>
+       <list>
++        <item itemvalue="Python.discontinued_script_for_regression_on_raw_data" />
+         <item itemvalue="Python.streamlit_tools" />
+         <item itemvalue="Python.App" />
+         <item itemvalue="Python.excel_editor" />

@@ -168,3 +168,4 @@ cython_debug/
 *.csv
 *.xlsx
 *.html
+*.xml

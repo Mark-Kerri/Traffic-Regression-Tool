@@ -418,7 +418,8 @@ def export_to_excel(regressions_df,base_year_datapoints,g_df,test_name,coeff_df,
     if len(test_name)>20:
         shortened_test_name_elements = [x[:3] for x in test_name.split('-')]
         workbook_test_name = ''.join(shortened_test_name_elements)
-
+        if len(workbook_test_name)>20:
+            workbook_test_name = workbook_test_name[15:] + 'et al'
     current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
     forecast_df_cols = len(forecast_df.columns)
     with pd.ExcelWriter(os.path.join(path,f'{current_timestamp}_{workbook_test_name}_output.xlsx'), engine='xlsxwriter') as writer:

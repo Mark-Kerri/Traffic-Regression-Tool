@@ -13,7 +13,7 @@ def main():
     forecast_df = pd.DataFrame()
 
     if st.button('Export output spreadsheet with selected regression'):
-        g_df = st.session_state.g_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1]
+        g_df = st.session_state.log_df[st.session_state.slider_value_start:st.session_state.slider_value_end + 1]
         for test in tests:
             
             coeff_df_orig = df.loc[test]

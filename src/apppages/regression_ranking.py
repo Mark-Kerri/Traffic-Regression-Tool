@@ -39,19 +39,19 @@ def main():
     if st.session_state.df is not None:
         # Load or create growth dataframe if not already available
         st.session_state.log_method = st.checkbox('Use log methodology',value=True)
-        if st.session_state.g_df is None:
-            st.session_state.g_df, st.session_state.g_df_idx, st.session_state.l_df, st.session_state.l_df_idx = growth_df(st.session_state.df)
+        if st.session_state.log_df is None:
+            st.session_state.log_df, st.session_state.g_df_idx, st.session_state.l_df, st.session_state.l_df_idx = growth_df(st.session_state.df)
             # st.text(st.session_state.l_df)
         # Extract independent (x) and dependent (y) variables from the growth dataframe
         st.header("Define Regression Parameters:")
 
-        x_cols = [x for x in st.session_state.g_df.columns if x[3] == "x"]
-        y_cols = [y for y in st.session_state.g_df.columns if y[3] == "y"]
+        x_cols = [x for x in st.session_state.log_df.columns if x[3] == "x"]
+        y_cols = [y for y in st.session_state.log_df.columns if y[3] == "y"]
 
         y_cols_ln = [y for y in st.session_state.l_df.columns if y[3] == "y"]
         x_cols_ln = [x for x in st.session_state.l_df.columns if x[3] == "x"]
         # User selects the dependent (y) variable
-        st.session_state.y_sel_g = st.selectbox(
+        st.session_state.y_sel_l = st.selectbox(
             "Choose the dependent (endogenous) variable:", options=y_cols
         )
 
@@ -72,8 +72,8 @@ def main():
             st.session_state.slider_value_start, st.session_state.slider_value_end = (
                 st.select_slider(
                     "Choose the range of points to be plotted",
-                    options=range(0, len(st.session_state.g_df)),
-                    value=(0, len(st.session_state.g_df) - 1),
+                    options=range(0, len(st.session_state.log_df)),
+                    value=(0, len(st.session_state.log_df) - 1),
                     format_func=stringify_g_df,
                 )
             )
@@ -121,11 +121,11 @@ def main():
         if st.button("Run all regressions"):
             if st.session_state.log_method == False:
                 st.session_state.r_df = create_and_show_df(
-                    st.session_state.g_df,
+                    st.session_state.log_df,
                     st.session_state.slider_value_start,
                     st.session_state.slider_value_end,
                     st.session_state.x_sel_g,
-                    st.session_state.y_sel_g,
+                    st.session_state.y_sel_l,
                     display_df=True,
                 )
             elif st.session_state.log_method == True:
@@ -138,7 +138,7 @@ def main():
                     display_df=True,
                 )
                 st.session_state.x_sel_g = st.session_state.x_sel_l
-                st.session_state.y_sel_g = st.session_state.y_sel_l
+                st.session_state.y_sel_l = st.session_state.y_sel_l
             # start a new outputs df and reset(?) all relevant session_state variables
             st.session_state.model_regressions_list = []
             st.session_state.model_r_squared = []
@@ -168,10 +168,10 @@ def main():
                     try:
                         if (
                             st.session_state.x_sel_g is not None
-                            and st.session_state.y_sel_g is not None
+                            and st.session_state.y_sel_l is not None
                         ):
                             if st.session_state.r_df is not None:
-                                y = st.session_state.r_df[st.session_state.y_sel_g][
+                                y = st.session_state.r_df[st.session_state.y_sel_l][
                                     st.session_state.slider_value_start : st.session_state.slider_value_end +1
                                 ]
                                 if st.session_state.constant_sel == True:
@@ -294,7 +294,7 @@ def main():
 
         if st.session_state.model_regressions_df is not None:
             st.subheader(
-                f"Regression outputs for {st.session_state.y_sel_g} "
+                f"Regression outputs for {st.session_state.y_sel_l} "
                 f"\n All combinations of independent (x) variables ({st.session_state.n_counter+1} tests), "
                 f"\n sorted by adjusted r squared highest to lowest"
             )
@@ -351,12 +351,12 @@ def main():
 
         # pasted backcast code below to be adapted in this page
             if st.session_state.log_method == False:
-                st.session_state.y_sel = st.session_state.y_sel_g.split("g: ")[1]
+                st.session_state.y_sel = st.session_state.y_sel_l.split("g: ")[1]
             elif st.session_state.log_method == True:
-                st.text(st.session_state.y_sel_g)
+                st.text(st.session_state.y_sel_l)
                 # st.text(st.session_state.y_sel_g.split("l: ")[1])
                 try:
-                    st.session_state.y_sel = st.session_state.y_sel_g.split("l: ")[1]
+                    st.session_state.y_sel = st.session_state.y_sel_l.split("l: ")[1]
                 except IndexError:
                     pass
             for test in st.session_state.test_list:

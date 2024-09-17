@@ -36,17 +36,17 @@ def main():
 
     prd = None
     # Load or create growth dataframe if not already available
-    if st.session_state.g_df is None and prd is None:
-        st.session_state.g_df, st.session_state.g_df_idx = growth_df(
+    if st.session_state.log_df is None and prd is None:
+        st.session_state.log_df, st.session_state.g_df_idx = growth_df(
             st.session_state.df
         )
 
     # Extract independent (x) and dependent (y) variables from the growth dataframe
-    x_cols = [x for x in st.session_state.g_df.columns if x[3] == "x"]
-    y_cols = [y for y in st.session_state.g_df.columns if y[3] == "y"]
+    x_cols = [x for x in st.session_state.log_df.columns if x[3] == "x"]
+    y_cols = [y for y in st.session_state.log_df.columns if y[3] == "y"]
 
     # User selects the dependent (y) variable
-    st.session_state.y_sel_g = st.selectbox(
+    st.session_state.y_sel_l = st.selectbox(
         "Choose the dependent (endogenous) variable:", options=y_cols
     )
 
@@ -63,8 +63,8 @@ def main():
     st.session_state.slider_value_start, st.session_state.slider_value_end = (
         st.select_slider(
             "Choose the range of points to be plotted",
-            options=range(0, len(st.session_state.g_df)),
-            value=(0, len(st.session_state.g_df) - 1),
+            options=range(0, len(st.session_state.log_df)),
+            value=(0, len(st.session_state.log_df) - 1),
             format_func=stringify_g_df,
         )
     )
@@ -72,21 +72,21 @@ def main():
     # Button to update the dataframe based on the selected time range and variables
     if st.button("Update dataframe"):
         st.session_state.r_df = create_and_show_df(
-            st.session_state.g_df,
+            st.session_state.log_df,
             st.session_state.slider_value_start,
             st.session_state.slider_value_end,
             st.session_state.x_sel_g,
-            st.session_state.y_sel_g,
+            st.session_state.y_sel_l,
         )
 
     # Try to fit a linear regression model and display the results
     try:
         if (
             st.session_state.x_sel_g is not None
-            and st.session_state.y_sel_g is not None
+            and st.session_state.y_sel_l is not None
         ):
             if st.session_state.r_df is not None:
-                y = st.session_state.r_df[st.session_state.y_sel_g][
+                y = st.session_state.r_df[st.session_state.y_sel_l][
                     st.session_state.slider_value_start : st.session_state.slider_value_end
                 ]
                 if constant_sel == "Yes":

@@ -77,7 +77,7 @@ def initialise_session_state():
     if "x_sel" not in st.session_state:
         st.session_state.x_sel = []
     if "y_sel_g" not in st.session_state:
-        st.session_state.y_sel_g = []
+        st.session_state.y_sel_l = []
     if "x_sel_g" not in st.session_state:
         st.session_state.x_sel_l = []
     if "y_sel_l" not in st.session_state:
@@ -86,8 +86,8 @@ def initialise_session_state():
         st.session_state.x_sel_g = []
     if "x_sel_reg" not in st.session_state:
         st.session_state.x_sel_reg = []
-    if "g_df" not in st.session_state:
-        st.session_state.g_df = None
+    if "log_df" not in st.session_state:
+        st.session_state.log_df = None
     if "l_df" not in st.session_state:
         st.session_state.l_df = None
     if "r_df" not in st.session_state:
@@ -112,12 +112,12 @@ def initialise_session_state():
         st.session_state.model_regressions_list = None
     if "reg_sel" not in st.session_state:
         st.session_state.reg_sel = None
+    if "reg_cols" not in st.session_state:
+        st.session_state.reg_cols = None
     if "n_counter" not in st.session_state:
         st.session_state.n_counter = 0
     if "constant_sel" not in st.session_state:
         st.session_state.constant_sel = False
-    if "constant_sel" not in st.session_state:
-        st.session_state.growth_df_checkbox = False
     if "selected_regression" not in st.session_state:
         st.session_state.selected_regression = None
     if "reg_influence" not in st.session_state:
@@ -174,8 +174,8 @@ def main():
         "apppages/read_inputs.py", title="Data Exploration", icon=":material/analytics:"
     )
 
-    regression_ranking = st.Page(
-        "apppages/regression_ranking.py",
+    regression_ranking_refactored = st.Page(
+        "apppages/regression_ranking_refactored.py",
         title="Regression Ranking",
         icon=":material/stacked_line_chart:",
     )
@@ -183,7 +183,7 @@ def main():
     outputs = st.Page("apppages/outputs.py", title="Outputs", icon=":material/output:")
 
     pg = st.navigation(
-        [introduction, input_template, read_inputs, regression_ranking, outputs]
+        [introduction, input_template, read_inputs, regression_ranking_refactored, outputs]
     )
     pg.run()
 
