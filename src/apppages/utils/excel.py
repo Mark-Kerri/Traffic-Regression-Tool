@@ -55,6 +55,8 @@ import openpyxl
 import pandas as pd
 from datetime import datetime
 from openpyxl.chart import ScatterChart, Reference, Series
+from openpyxl.styles import Font, PatternFill
+from openpyxl import load_workbook
 
 # Constants
 TEMPLATE_PATH = "data/utils/excel_template_v0.01.xlsx"
@@ -411,7 +413,7 @@ def spreadsheet_to_df(input_file_path):
 
 # def export_to_excel(coeff_df,df,summary_df,residuals_df,path):
 
-def export_to_excel(regressions_df,base_year_datapoints,g_df,test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
+def export_to_excel(regressions_df,g_df,test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
 
     # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
     workbook_test_name = test_name
@@ -422,14 +424,25 @@ def export_to_excel(regressions_df,base_year_datapoints,g_df,test_name,coeff_df,
             workbook_test_name = workbook_test_name[15:] + 'et al'
     current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
     forecast_df_cols = len(forecast_df.columns)
-    with pd.ExcelWriter(os.path.join(path,f'{current_timestamp}_{workbook_test_name}_output.xlsx'), engine='xlsxwriter') as writer:
+    full_output_path = os.path.join(path,f'{current_timestamp}_{workbook_test_name}_output.xlsx')
+    with pd.ExcelWriter(full_output_path, engine='xlsxwriter') as writer:
 
 
         # all regressions
         regressions_df.to_excel(writer, sheet_name=f'All regressions', index=True)
+        ws_regressions = writer.sheets[f'All regressions']
+        ws_regressions = ws_regressions.set_column(0, 0, 85)
+        # Define styles for bold text and grey background
+        bold_font = Font(bold=True)
+        grey_fill = PatternFill(start_color="C0C0C0", end_color="C0C0C0", fill_type="solid")
+
+
+        
+
+
         # add metadata
-        metadata = pd.DataFrame(data=base_year_datapoints)
-        metadata.to_excel(writer, sheet_name=f'Base year', index=False)
+        # metadata = pd.DataFrame(data=base_year_datapoints)
+        # metadata.to_excel(writer, sheet_name=f'Base year', index=False)
 
         # Write each dataframe to a different worksheet.
         coeff_df.to_excel(writer, sheet_name=f'{workbook_test_name} Coeffs', index=True)
@@ -491,6 +504,33 @@ def export_to_excel(regressions_df,base_year_datapoints,g_df,test_name,coeff_df,
         worksheet.insert_chart('I2', chart)
 
         g_df.to_excel(writer, sheet_name=f'{workbook_test_name} growth rates', index=True)
+    return full_output_path
+def reformat_excel(file_path,test_name):
+    # Load the workbook and select the desired worksheet
+    wb = load_workbook(file_path)
+    ws = wb['All regressions']
 
+    # Define styles for bold text and grey background
+    bold_font = Font(bold=True)
+    grey_fill = PatternFill(start_color="C0C0C0", end_color="C0C0C0", fill_type="solid")
 
+    # Find the row with "test_name" in column A
+    for row in ws.iter_rows(min_col=1, max_col=1):
+        for cell in row:
+            if cell.value == test_name:
+                row_number = cell.row
+                
+                # Apply formatting to the entire row
+                for cell_in_row in ws[row_number]:
+                    cell_in_row.font = bold_font
+                    cell_in_row.fill = grey_fill
+                
+                # Save the modified workbook
+                wb.save(file_path)
+                break
+    # Format numbers to 2 decimal places in Column B (or any other numerical columns)
+    for row in ws.iter_rows(min_row=2, min_col=2, max_col=13):  # Adjust column range for other numerical columns
+        for cell in row:
+            cell.number_format = '0.000'  # 2 decimal places
 
+    wb.save(file_path)
