@@ -68,20 +68,40 @@ def main():
         )
 
         with st.expander("Advanced filters"):
-            st.subheader('Skip variable combinations by setting the respective values to zero in the matrix below')
+            st.subheader('Skip variable combinations')
+            st.markdown('Set the pairs to zero in the matrix below so that those pairs are not used as part of a regerssion model at the same time:')
             # st.text(st.session_state.x_sel_l)
             x_interaction_table_full = pd.DataFrame(data = 1,index = st.session_state.x_sel_l, columns = st.session_state.x_sel_l)
             bool_matrix = np.triu(np.ones(x_interaction_table_full.shape)).astype(bool)
             x_interaction_table = x_interaction_table_full.where(bool_matrix)
-            # x_interaction_table = pd.DataFrame(np.tril(x_interaction_table_full),index = st.session_state.x_sel_l, columns = st.session_state.x_sel_l)
             st.session_state.x_interaction_table = st.data_editor(x_interaction_table, num_rows="dynamic")
+
             st.session_state.x_inter_stack = st.session_state.x_interaction_table.stack().reset_index()
             st.session_state.x_inter_stack.columns = ['X_1','X_2','Value']
             st.session_state.x_inter_stack = st.session_state.x_inter_stack[st.session_state.x_inter_stack['Value'] == 0]
-            # st.session_state.x_inter_stack['Combo'] = st.session_state.x_inter_stack['X_1'] + st.session_state.x_inter_stack['X_2']
             st.session_state.x_combos_to_exclude = list(st.session_state.x_inter_stack[['X_1','X_2']].values)
-            st.text(
-            st.session_state.x_combos_to_exclude)
+            if st.session_state.n_counter > 0:
+                st.subheader('Parameter filtering')
+                st.markdown('')
+
+                st.session_state.parameter_filters = pd.DataFrame(data=st.session_state.regressions_min_max_df.T)#, columns = ['Min','Max'])#,index = st.session_state.x_sel_l + ['r_squared'])
+                st.session_state.parameter_filters.columns = ['Min','Max']
+                parameter_filters = st.data_editor(st.session_state.parameter_filters, num_rows="dynamic")
+                param_t = parameter_filters.T
+                # st.data_editor(param_t)
+                if st.button('Apply filters'):
+                    st.session_state.model_regressions_filtered = st.session_state.model_regressions_df
+                    for col in param_t:
+                        st.session_state.model_regressions_df[col] = st.session_state.model_regressions_df[col].astype(float)
+                        # print(float(param_t.loc['Min',col]))
+                        # print(len(st.session_state.model_regressions_df[col]))
+                        st.session_state.model_regressions_filtered[col] = st.session_state.model_regressions_filtered[st.session_state.model_regressions_filtered[col] >=float(param_t.loc['Min',col])][col]
+                        st.session_state.model_regressions_filtered.dropna()
+                        # st.session_state.model_regressions_df[col] = st.session_state.model_regressions_df[col].astype(str)
+                # print(st.session_state.model_regressions_df.dtypes)
+                # st.session_state.model_regressions_df =
+
+
 
         # Button to update the dataframe based on the selected time range and variables
         if st.button("Run all regressions"):
@@ -197,17 +217,9 @@ def main():
                                     st.session_state.reg_residuals[test_name] = model.resid
                                     st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
 
-                                    if x_elements == len(st.session_state.x_sel_l) - 1 and i == len(x_combinations) - 1:
+                                    # if x_elements == len(st.session_state.x_sel_l) - 1 and i == len(x_combinations) - 1:
 
-                                        if "Test name" in st.session_state.model_regressions_df.columns:
-                                            st.session_state.model_regressions_df = (
-                                                st.session_state.model_regressions_df.set_index("Test name")
-                                            )
-                                        st.session_state.model_regressions_df = (
-                                            st.session_state.model_regressions_df.sort_values(
-                                                "r_squared", ascending=False
-                                            )
-                                        )
+
 
 
                                     st.session_state.n_counter += 1
@@ -216,16 +228,37 @@ def main():
                                 "Please make sure you chose at least one independent (x) variable."
                             )
 
+
         if st.session_state.model_regressions_df is not None:
+            if "Test name" in st.session_state.model_regressions_df.columns:
+                st.session_state.model_regressions_df = (
+                    st.session_state.model_regressions_df.set_index("Test name")
+                )
+            st.session_state.model_regressions_df = (
+                st.session_state.model_regressions_df.sort_values(
+                    "r_squared", ascending=False
+                )
+            )
             st.subheader(
                 f"Regression outputs for {st.session_state.y_sel_l[5:]} "
                 f"\n All combinations of independent (x) variables ({st.session_state.n_counter+1} tests), "
                 f"\n sorted by adjusted r squared highest to lowest"
             )
             with st.expander("Regression outputs"):
-                st.session_state.selected_regression = st.dataframe(
-                    st.session_state.model_regressions_df, on_select="rerun"
-                )
+                # after test filtering is applied
+                if st.session_state.model_regressions_filtered is not None:
+                    st.session_state.selected_regression = st.dataframe(
+                        st.session_state.model_regressions_filtered, on_select="rerun"
+                    )
+                # before any filtering is applied on any of the columns
+                else:
+                    st.session_state.selected_regression = st.dataframe(
+                        st.session_state.model_regressions_df, on_select="rerun"
+                    )
+                 # extract min/max in order to apply filtering
+                regression_min = st.session_state.model_regressions_df.min()
+                regressions_max = st.session_state.model_regressions_df.max()
+                st.session_state.regressions_min_max_df = pd.DataFrame([regression_min,regressions_max])
             try:
                 st.session_state.reg_sel = st.text_input(
                     "Select a test from the table above:",

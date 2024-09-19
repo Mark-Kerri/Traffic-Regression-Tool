@@ -32,7 +32,7 @@ This module is meant to be executed as a standalone Streamlit application. When 
 web interface that guides users through the regression analysis process step-by-step.
 
 """
-
+import pandas as pd
 import streamlit as st
 
 
@@ -108,6 +108,10 @@ def initialise_session_state():
         st.session_state.model_r_squared = []
     if "model_regressions_df" not in st.session_state:
         st.session_state.model_regressions_df = None
+    if "model_regressions_filtered" not in st.session_state:
+        st.session_state.model_regressions_filtered = None
+    if "regressions_min_max_df" not in st.session_state:
+        st.session_state.regressions_min_max_df = None
     if "model_regressions_list" not in st.session_state:
         st.session_state.model_regressions_list = None
     if "reg_sel" not in st.session_state:
@@ -156,6 +160,8 @@ def initialise_session_state():
         st.session_state.x_inter_stack = None
     if "x_combos_to_exclude" not in st.session_state:
         st.session_state.x_combos_to_exclude = None
+    if "parameter_filters" not in st.session_state:
+        st.session_state.parameter_filters = None
 def main():
     """Run main function to render the Streamlit app interface."""
     initialise_session_state()
