@@ -15,6 +15,7 @@ import plotly.express as px
 from apppages.utils.streamlit_tools import stringify, log_df, create_and_show_df, stringify_l_df, backcast_df
 import os
 import math
+import numpy as np
 
 def main():
     """
@@ -66,6 +67,22 @@ def main():
             )
         )
 
+        with st.expander("Advanced filters"):
+            st.subheader('Skip variable combinations by setting the respective values to zero in the matrix below')
+            # st.text(st.session_state.x_sel_l)
+            x_interaction_table_full = pd.DataFrame(data = 1,index = st.session_state.x_sel_l, columns = st.session_state.x_sel_l)
+            bool_matrix = np.triu(np.ones(x_interaction_table_full.shape)).astype(bool)
+            x_interaction_table = x_interaction_table_full.where(bool_matrix)
+            # x_interaction_table = pd.DataFrame(np.tril(x_interaction_table_full),index = st.session_state.x_sel_l, columns = st.session_state.x_sel_l)
+            st.session_state.x_interaction_table = st.data_editor(x_interaction_table, num_rows="dynamic")
+            st.session_state.x_inter_stack = st.session_state.x_interaction_table.stack().reset_index()
+            st.session_state.x_inter_stack.columns = ['X_1','X_2','Value']
+            st.session_state.x_inter_stack = st.session_state.x_inter_stack[st.session_state.x_inter_stack['Value'] == 0]
+            # st.session_state.x_inter_stack['Combo'] = st.session_state.x_inter_stack['X_1'] + st.session_state.x_inter_stack['X_2']
+            st.session_state.x_combos_to_exclude = list(st.session_state.x_inter_stack[['X_1','X_2']].values)
+            st.text(
+            st.session_state.x_combos_to_exclude)
+
         # Button to update the dataframe based on the selected time range and variables
         if st.button("Run all regressions"):
             st.session_state.r_df = create_and_show_df(
@@ -90,109 +107,114 @@ def main():
 
             # Try to fit a linear regression model and display the results
             st.session_state.n_counter = 0
-
             for x_elements in range(len(st.session_state.x_sel_l)):
                 x_combinations = list(itertools.combinations(st.session_state.x_sel_l, x_elements))
                 for i, x_combo in enumerate(x_combinations):
-                    st.session_state.x_sel_reg = [
-                        x for x in st.session_state.x_sel_l if x in list(x_combo)
-                    ]
-                    try:
-                        if (
-                            st.session_state.x_sel_l is not None
-                            and st.session_state.y_sel_l is not None
-                        ):
-                            if st.session_state.r_df is not None:
-                                y = st.session_state.r_df[st.session_state.y_sel_l][
-                                    st.session_state.slider_value_start : st.session_state.slider_value_end +1
-                                ]
-                                if st.session_state.constant_sel == True:
-                                    x = st.session_state.r_df[
-                                        st.session_state.x_sel_reg
-                                    ][
-                                        st.session_state.slider_value_start : st.session_state.slider_value_end
-                                    +1]
-                                    x = sm.add_constant(
-                                        x, prepend=False, has_constant="add"
+                    exclude = False
+                    for pair in st.session_state.x_combos_to_exclude:
+                        if set(pair).issubset(set(x_combo)):
+                            exclude = True
+                            break
+                    if not exclude:
+                        st.session_state.x_sel_reg = [
+                            x for x in st.session_state.x_sel_l if x in list(x_combo)
+                        ]
+                        try:
+                            if (
+                                st.session_state.x_sel_l is not None
+                                and st.session_state.y_sel_l is not None
+                            ):
+                                if st.session_state.r_df is not None:
+                                    y = st.session_state.r_df[st.session_state.y_sel_l][
+                                        st.session_state.slider_value_start : st.session_state.slider_value_end +1
+                                    ]
+                                    if st.session_state.constant_sel == True:
+                                        x = st.session_state.r_df[
+                                            st.session_state.x_sel_reg
+                                        ][
+                                            st.session_state.slider_value_start : st.session_state.slider_value_end
+                                        +1]
+                                        x = sm.add_constant(
+                                            x, prepend=False, has_constant="add"
+                                        )
+                                    else:
+                                        x = st.session_state.r_df[
+                                            st.session_state.x_sel_reg
+                                        ][
+                                            st.session_state.slider_value_start : st.session_state.slider_value_end
+                                        ]
+
+                                    model = sm.OLS(y, x).fit()
+
+                                    # compute the residuals and other metrics
+                                    st.session_state.reg_influence = model
+                                    # st.write(influence.results)
+                                    st.session_state.model_params = dict(model.params)
+
+
+                                    test_name_list = [
+                                        item.split("x:")[1]
+                                        for item in st.session_state.x_sel_reg
+                                        if "x:" in item
+                                    ]
+                                    test_name = "-".join(test_name_list)
+                                    st.session_state.model_regressions_list.append(
+                                        test_name
                                     )
-                                else:
-                                    x = st.session_state.r_df[
+                                    st.session_state.model_r_squared.append(
+                                        model.rsquared_adj
+                                    )
+
+                                    # Select only the keys that are in the columns
+                                    filtered_dicts = [
+                                        {
+                                            key: value
+                                            for key, value in st.session_state.model_params.items()
+                                            if key
+                                            in st.session_state.model_regressions_df.columns
+                                        }
+                                    ]
+
+                                    filtered_dicts[0]["r_squared"] = model.rsquared_adj
+                                    filtered_dicts[0]["Test name"] = test_name
+
+                                    # Append the row
+                                    st.session_state.model_regressions_df = pd.concat(
+                                        [
+                                            st.session_state.model_regressions_df,
+                                            pd.DataFrame(
+                                                filtered_dicts,
+                                                columns=st.session_state.model_regressions_df.columns,
+                                            ),
+                                        ]
+                                    )
+                                    st.session_state.regression_rank_dict[test_name] = (
+                                        model.summary()
+                                    )
+                                    st.session_state.regr_tests_and_cols_dict[test_name] = (
                                         st.session_state.x_sel_reg
-                                    ][
-                                        st.session_state.slider_value_start : st.session_state.slider_value_end
-                                    ]
+                                    )
+                                    st.session_state.reg_residuals[test_name] = model.resid
+                                    st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
 
-                                model = sm.OLS(y, x).fit()
+                                    if x_elements == len(st.session_state.x_sel_l) - 1 and i == len(x_combinations) - 1:
 
-                                # compute the residuals and other metrics
-                                st.session_state.reg_influence = model
-                                # st.write(influence.results)
-                                st.session_state.model_params = dict(model.params)
-
-
-                                test_name_list = [
-                                    item.split("x:")[1]
-                                    for item in st.session_state.x_sel_reg
-                                    if "x:" in item
-                                ]
-                                test_name = "-".join(test_name_list)
-                                st.session_state.model_regressions_list.append(
-                                    test_name
-                                )
-                                st.session_state.model_r_squared.append(
-                                    model.rsquared_adj
-                                )
-
-                                # Select only the keys that are in the columns
-                                filtered_dicts = [
-                                    {
-                                        key: value
-                                        for key, value in st.session_state.model_params.items()
-                                        if key
-                                        in st.session_state.model_regressions_df.columns
-                                    }
-                                ]
-
-                                filtered_dicts[0]["r_squared"] = model.rsquared_adj
-                                filtered_dicts[0]["Test name"] = test_name
-
-                                # Append the row
-                                st.session_state.model_regressions_df = pd.concat(
-                                    [
-                                        st.session_state.model_regressions_df,
-                                        pd.DataFrame(
-                                            filtered_dicts,
-                                            columns=st.session_state.model_regressions_df.columns,
-                                        ),
-                                    ]
-                                )
-                                st.session_state.regression_rank_dict[test_name] = (
-                                    model.summary()
-                                )
-                                st.session_state.regr_tests_and_cols_dict[test_name] = (
-                                    st.session_state.x_sel_reg
-                                )
-                                st.session_state.reg_residuals[test_name] = model.resid
-                                st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
-
-                                if x_elements == len(st.session_state.x_sel_l) - 1 and i == len(x_combinations) - 1:
-
-                                    if "Test name" in st.session_state.model_regressions_df.columns:
+                                        if "Test name" in st.session_state.model_regressions_df.columns:
+                                            st.session_state.model_regressions_df = (
+                                                st.session_state.model_regressions_df.set_index("Test name")
+                                            )
                                         st.session_state.model_regressions_df = (
-                                            st.session_state.model_regressions_df.set_index("Test name")
+                                            st.session_state.model_regressions_df.sort_values(
+                                                "r_squared", ascending=False
+                                            )
                                         )
-                                    st.session_state.model_regressions_df = (
-                                        st.session_state.model_regressions_df.sort_values(
-                                            "r_squared", ascending=False
-                                        )
-                                    )
 
 
-                                st.session_state.n_counter += 1
-                    except ValueError:
-                        st.error(
-                            "Please make sure you chose at least one independent (x) variable."
-                        )
+                                    st.session_state.n_counter += 1
+                        except ValueError:
+                            st.error(
+                                "Please make sure you chose at least one independent (x) variable."
+                            )
 
         if st.session_state.model_regressions_df is not None:
             st.subheader(

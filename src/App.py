@@ -112,8 +112,6 @@ def initialise_session_state():
         st.session_state.model_regressions_list = None
     if "reg_sel" not in st.session_state:
         st.session_state.reg_sel = None
-    if "reg_cols" not in st.session_state:
-        st.session_state.reg_cols = None
     if "n_counter" not in st.session_state:
         st.session_state.n_counter = 0
     if "constant_sel" not in st.session_state:
@@ -121,7 +119,7 @@ def initialise_session_state():
     if "selected_regression" not in st.session_state:
         st.session_state.selected_regression = None
     if "reg_influence" not in st.session_state:
-        st.session_state.reg_influence = None
+        st.session_state.reg_influence = None ##
     if "reg_residuals" not in st.session_state:
         st.session_state.reg_residuals = {}
     if "reg_fitted_vals" not in st.session_state:
@@ -145,16 +143,19 @@ def initialise_session_state():
     if "coeff_dict" not in st.session_state:
         st.session_state.coeff_dict = {}
     if "elast_dict" not in st.session_state:
-        st.session_state.elast_dict = {}
+        st.session_state.elast_dict = {}##
     if "bc_dict" not in st.session_state:
         st.session_state.bc_dict = {}
     if "test_list" not in st.session_state:
         st.session_state.test_list = None
     if "bc_plot_dict" not in st.session_state:
         st.session_state.bc_plot_dict = {}
-    if "log_method" not in st.session_state:
-        st.session_state.log_method = False
-
+    if "x_interaction_table" not in st.session_state:
+        st.session_state.x_interaction_table = None
+    if "x_inter_stack" not in st.session_state:
+        st.session_state.x_inter_stack = None
+    if "x_combos_to_exclude" not in st.session_state:
+        st.session_state.x_combos_to_exclude = None
 def main():
     """Run main function to render the Streamlit app interface."""
     initialise_session_state()

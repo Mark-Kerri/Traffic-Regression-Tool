@@ -41,7 +41,6 @@ def main():
         st.session_state.log_method = st.checkbox('Use log methodology',value=True)
         if st.session_state.log_df is None:
             st.session_state.log_df, st.session_state.g_df_idx, st.session_state.l_df, st.session_state.l_df_idx = growth_df(st.session_state.df)
-            # st.text(st.session_state.l_df)
         # Extract independent (x) and dependent (y) variables from the growth dataframe
         st.header("Define Regression Parameters:")
 
@@ -51,9 +50,7 @@ def main():
         y_cols_ln = [y for y in st.session_state.l_df.columns if y[3] == "y"]
         x_cols_ln = [x for x in st.session_state.l_df.columns if x[3] == "x"]
         # User selects the dependent (y) variable
-        st.session_state.y_sel_l = st.selectbox(
-            "Choose the dependent (endogenous) variable:", options=y_cols
-        )
+
 
         st.session_state.x_sel_g = x_cols
         
@@ -66,57 +63,17 @@ def main():
         # st.session_state.constant_sel = st.selectbox("Add constant?:", options=["Yes", "No"])
         st.session_state.constant_sel = st.checkbox("Include constant", value=True)
 
-        if st.session_state.log_method == False:
 
             # Slider for selecting the time range to analyze
-            st.session_state.slider_value_start, st.session_state.slider_value_end = (
-                st.select_slider(
-                    "Choose the range of points to be plotted",
-                    options=range(0, len(st.session_state.log_df)),
-                    value=(0, len(st.session_state.log_df) - 1),
-                    format_func=stringify_g_df,
-                )
+        st.session_state.slider_value_start, st.session_state.slider_value_end = (
+            st.select_slider(
+                "Choose the range of points to be plotted",
+                options=range(0, len(st.session_state.l_df)),
+                value=(0, len(st.session_state.l_df) - 1),
+                format_func=stringify_l_df,
             )
-            st.session_state.base_slider_value_start, st.session_state.base_slider_value_end = (
-                st.select_slider(
-                    "Select the range of points to be used as base year",
-                    options=range(0, len(st.session_state.df)),
-                    value=(0, len(st.session_state.df) - 1),
-                    # on_change=visualise_data,
-                    args=(
-                        st.session_state.df,
-                        st.session_state.base_slider_value_start,
-                        st.session_state.base_slider_value_end,
-                    ),
-                    format_func=stringify,
-                )
-            )
-        elif st.session_state.log_method == True:
-            # Slider for selecting the time range to analyze
-            st.session_state.slider_value_start, st.session_state.slider_value_end = (
-                st.select_slider(
-                    "Choose the range of points to be plotted",
-                    options=range(0, len(st.session_state.l_df)),
-                    value=(0, len(st.session_state.l_df) - 1),
-                    format_func=stringify_l_df,
-                )
-            )
-            st.session_state.base_slider_value_start, st.session_state.base_slider_value_end = (
-                st.select_slider(
-                    "Select the range of points to be used as base year",
-                    options=range(0, len(st.session_state.df)),
-                    value=(0, len(st.session_state.df) - 1),
-                    # on_change=visualise_data,
-                    args=(
-                        st.session_state.df,
-                        st.session_state.base_slider_value_start,
-                        st.session_state.base_slider_value_end,
-                    ),
-                    format_func=stringify,
-                )
-            )
-        base_year_start = st.session_state.base_slider_value_start
-        base_year_end = st.session_state.base_slider_value_end
+        )
+
         # Button to update the dataframe based on the selected time range and variables
         if st.button("Run all regressions"):
             if st.session_state.log_method == False:
@@ -524,12 +481,7 @@ def main():
                         st.session_state.bc_df[st.session_state.y_sel] = st.session_state.df[
                             st.session_state.y_sel
                         ]
-                        # if st.button("Display forecasted y table"):
-                        #     st.dataframe(st.session_state.bc_df[st.session_state.slider_value_start:st.session_state.slider_value_end+1+st.session_state.prd])
-                            # st.text(st.session_state.y_sel)
-                        # visualise_data(st.session_state.bc_plot_df,0,len(st.session_state.bc_plot_df)-1)
-                        # to-do: Either modify the visualise_data function to be more flexbile (e.g. add input title)
-                        #   or create a new visualisation function
+
                         st.session_state.bc_plot_df = st.session_state.bc_df[
                             ["Forecasted y", st.session_state.y_sel]
                         ]
