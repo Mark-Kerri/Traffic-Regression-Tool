@@ -91,13 +91,27 @@ def main():
                 # st.data_editor(param_t)
                 if st.button('Apply filters'):
                     st.session_state.model_regressions_filtered = st.session_state.model_regressions_df
+                    st.session_state.model_regressions_df = st.session_state.model_regressions_df.astype(
+                        float)
+
                     for col in param_t:
-                        st.session_state.model_regressions_df[col] = st.session_state.model_regressions_df[col].astype(float)
+                        print(st.session_state.regressions_min_max_df.T)
                         # print(float(param_t.loc['Min',col]))
                         # print(len(st.session_state.model_regressions_df[col]))
-                        st.session_state.model_regressions_filtered[col] = st.session_state.model_regressions_filtered[st.session_state.model_regressions_filtered[col] >=float(param_t.loc['Min',col])][col]
-                        st.session_state.model_regressions_filtered.dropna()
+                        st.session_state.model_regressions_filtered[col] = st.session_state.model_regressions_df[
+                            (st.session_state.model_regressions_df[col] >= float(param_t.loc['Min', col])) &
+                            (st.session_state.model_regressions_df[col] <= float(param_t.loc['Max', col]))
+                            ][col]
+
+                        if param_t.loc['Min', col] != st.session_state.regressions_min_max_df.T.loc[col, 0] or \
+                                param_t.loc['Max', col] != st.session_state.regressions_min_max_df.T.loc[col, 1]:
+
+                            st.session_state.model_regressions_filtered = st.session_state.model_regressions_filtered[
+                                st.session_state.model_regressions_filtered[col].notna()
+                                # Removes rows where col is None or NaN
+                            ]
                         # st.session_state.model_regressions_df[col] = st.session_state.model_regressions_df[col].astype(str)
+                        # break
                 # print(st.session_state.model_regressions_df.dtypes)
                 # st.session_state.model_regressions_df =
 
@@ -365,12 +379,7 @@ def main():
                             st.latex(rf'\cdot({col[5:]}_t)^{{{coeff_df[col][0]:.2f}}}')
 
                 st.header("Backcast:")
-                st.text(st.session_state.reg_sel)
-                st.text(st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel])
-                st.dataframe(st.session_state.r_df[st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel]])
                 st.session_state.bc_plot_df = st.session_state.bc_dict[st.session_state.reg_sel]
-                st.text(st.session_state.bc_plot_df.columns)
-                st.text(st.session_state.y_sel_l[3:])
                 st.session_state.bc_plot_df = st.session_state.bc_plot_df[['Forecast y', st.session_state.y_sel_l[3:]]]
                 fig = px.line(
                     st.session_state.bc_plot_df,
@@ -381,8 +390,8 @@ def main():
                 )
                 fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
                 st.plotly_chart(fig)
-
-                st.dataframe(st.session_state.bc_dict[st.session_state.reg_sel])
+                with st.expander('Display underlying data'):
+                    st.dataframe(st.session_state.bc_dict[st.session_state.reg_sel])
 
                 if st.button("Export forecast as html"):
                     fig.write_html(os.path.join(st.session_state.output_path,f"Forecast of {st.session_state.y_sel[2:]} "

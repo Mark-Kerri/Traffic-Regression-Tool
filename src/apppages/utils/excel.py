@@ -423,6 +423,8 @@ def export_to_excel(regressions_df,g_df,test_name,coeff_df,summary_df,residuals_
         if len(workbook_test_name)>20:
             workbook_test_name = workbook_test_name[15:] + 'et al'
     current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
+    cols = [x for x in forecast_df.columns if x.startswith('y:') or x == 'Forecast y']
+    forecast_df = forecast_df[cols]
     forecast_df_cols = len(forecast_df.columns)
     full_output_path = os.path.join(path,f'{current_timestamp}_{workbook_test_name}_output.xlsx')
     with pd.ExcelWriter(full_output_path, engine='xlsxwriter') as writer:
@@ -503,7 +505,7 @@ def export_to_excel(regressions_df,g_df,test_name,coeff_df,summary_df,residuals_
         # Insert the chart into the worksheet
         worksheet.insert_chart('I2', chart)
 
-        g_df.to_excel(writer, sheet_name=f'{workbook_test_name} growth rates', index=True)
+        g_df.to_excel(writer, sheet_name=f'{workbook_test_name} regr inputs', index=True)
     return full_output_path
 def reformat_excel(file_path,test_name):
     # Load the workbook and select the desired worksheet
