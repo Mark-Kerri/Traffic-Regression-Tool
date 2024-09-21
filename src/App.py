@@ -100,8 +100,8 @@ def initialise_session_state():
         st.session_state.model_params = []
     if "model_params" not in st.session_state:
         st.session_state.model_params = []
-    if "regression_rank_dict" not in st.session_state:
-        st.session_state.regression_rank_dict = {}
+    if "regression_outputs" not in st.session_state:
+        st.session_state.regression_outputs = {}
     if "regr_tests_and_cols_dict" not in st.session_state:
         st.session_state.regr_tests_and_cols_dict = {}
     if "model_r_squared" not in st.session_state:

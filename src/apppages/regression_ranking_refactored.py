@@ -10,6 +10,7 @@ import itertools
 import pandas as pd
 import streamlit as st
 import statsmodels.api as sm
+from statsmodels.stats.stattools import durbin_watson
 from statsmodels.stats.outliers_influence import OLSInfluence
 import plotly.express as px
 from apppages.utils.streamlit_tools import stringify, log_df, create_and_show_df, stringify_l_df, backcast_df
@@ -88,6 +89,7 @@ def main():
                 st.session_state.parameter_filters.columns = ['Min','Max']
                 parameter_filters = st.data_editor(st.session_state.parameter_filters, num_rows="dynamic")
                 param_t = parameter_filters.T
+                
                 # st.data_editor(param_t)
                 if st.button('Apply filters'):
                     st.session_state.model_regressions_filtered = st.session_state.model_regressions_df
@@ -130,7 +132,7 @@ def main():
             # start a new outputs df and reset(?) all relevant session_state variables
             st.session_state.model_regressions_list = []
             st.session_state.model_r_squared = []
-            st.session_state.regression_rank_dict = {}
+            st.session_state.regression_outputs = {}
             st.session_state.regr_tests_and_cols_dict = {}
             st.session_state.model_regressions_df = pd.DataFrame(
                 columns=st.session_state.x_sel_l
@@ -222,9 +224,17 @@ def main():
                                             ),
                                         ]
                                     )
-                                    st.session_state.regression_rank_dict[test_name] = (
-                                        model.summary()
-                                    )
+                                    t_vals = model.tvalues
+                                    t_vals.index = [i + ' t-val' for i in t_vals.index]
+                                    t_vals = t_vals.rename(test_name)
+                                    st.session_state.regression_outputs[test_name] = {
+                                        'model summary':
+                                        model.summary(),
+                                        'durbin watson': durbin_watson(model.resid),
+                                        'log likelihood': model.llf,
+                                        't stats': t_vals
+                                        }
+                                    
                                     st.session_state.regr_tests_and_cols_dict[test_name] = (
                                         st.session_state.x_sel_reg
                                     )
@@ -286,7 +296,7 @@ def main():
 
         if st.session_state.reg_sel:
             with st.expander("Regression summary table"):
-                st.text(st.session_state.regression_rank_dict[st.session_state.reg_sel])
+                st.text(st.session_state.regression_outputs[st.session_state.reg_sel]['model summary'])
             with st.expander("Regression further outputs"):
                 st.text('Regression residuals and fitted values')
 
@@ -398,7 +408,10 @@ def main():
                                                                          f"({st.session_state.bc_plot_df.index[0]} "
                                                                          f"-{st.session_state.bc_plot_df.index[-1]}).html")
                                ) # Save as HTML
-
+                st.session_state.regression_outputs[st.session_state.reg_sel]['durbin watson']
+                st.session_state.regression_outputs[st.session_state.reg_sel]['log likelihood']
+                st.session_state.regression_outputs[st.session_state.reg_sel]['t stats']
+                st.session_state.regression_outputs[st.session_state.reg_sel]['t stats']
     else:
         st.subheader(
             'Please load traffic data using the "Data exploration" page before navigating back to this page.'

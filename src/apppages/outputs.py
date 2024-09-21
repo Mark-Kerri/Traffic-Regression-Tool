@@ -6,6 +6,20 @@ def main():
     # st.text(st.session_state.reg_sel)
     df = st.session_state.model_regressions_df.iloc[st.session_state.selected_regression['selection']['rows']]
     output_summary_df = st.dataframe(df, on_select="rerun")
+
+    df_t = df.T
+    # df_t.index = [i[3:] for i in df_t.index if i.startswith('l')]
+
+    # df_t = st.dataframe(df_t, on_select="rerun")
+    tvalues_df = st.session_state.regression_outputs[st.session_state.reg_sel]['t stats']
+    # tvalues_df.columns = st.session_state.reg_sel                                    # st.dataframe(t_val_df)
+
+    # tvalues_df.index = [ i[1:] + ' t-val' for i in tvalues_df.index]
+    # tvalues_df = st.dataframe(tvalues_df,on_select="rerun")
+    combined_df = pd.concat([df_t,tvalues_df])
+    combined_df.sort_index(inplace=True)
+    tvalues_df = st.dataframe(combined_df,on_select="rerun")
+
     tests = df.index
     st.session_state.output_path = st.text_input('Type the output folder path below:',value='outputs')
 
@@ -26,7 +40,7 @@ def main():
             forecast_df = st.session_state.bc_dict[test]
             # st.text(st.session_state.bc_df)
 
-            full_output_path = export_name = export_to_excel(st.session_state.model_regressions_df,r_df,test,coeff_df_orig,summary_df,residuals_df,st.session_state.output_path,forecast_df)
+            full_output_path = export_to_excel(st.session_state.model_regressions_df,r_df,test,coeff_df_orig,summary_df,residuals_df,st.session_state.output_path,forecast_df)
         # export_to_excel(coeff_df,df,reg_summary,residuals_df,path)
             reformat_excel(full_output_path,test)
 if __name__ == "__page__":
