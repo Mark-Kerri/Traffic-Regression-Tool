@@ -81,10 +81,10 @@ def main():
             st.session_state.x_inter_stack.columns = ['X_1','X_2','Value']
             st.session_state.x_inter_stack = st.session_state.x_inter_stack[st.session_state.x_inter_stack['Value'] == 0]
             st.session_state.x_combos_to_exclude = list(st.session_state.x_inter_stack[['X_1','X_2']].values)
-            if st.session_state.n_counter > 0:
-                st.subheader('Parameter filtering')
-                st.markdown('')
-
+            # if st.session_state.n_counter > 0:
+            st.subheader('Parameter filtering')
+            st.markdown('After all regressions are run, the user can apply filters on the range of the regression parameters')
+            if st.button('Load min/max parameters'):
                 st.session_state.parameter_filters = pd.DataFrame(data=st.session_state.regressions_min_max_df.T)#, columns = ['Min','Max'])#,index = st.session_state.x_sel_l + ['r_squared'])
                 st.session_state.parameter_filters.columns = ['Min','Max']
                 parameter_filters = st.data_editor(st.session_state.parameter_filters, num_rows="dynamic")
@@ -112,13 +112,7 @@ def main():
                                 st.session_state.model_regressions_filtered[col].notna()
                                 # Removes rows where col is None or NaN
                             ]
-                        # st.session_state.model_regressions_df[col] = st.session_state.model_regressions_df[col].astype(str)
-                        # break
-                # print(st.session_state.model_regressions_df.dtypes)
-                # st.session_state.model_regressions_df =
-
-
-
+                        
         # Button to update the dataframe based on the selected time range and variables
         if st.button("Run all regressions"):
             st.session_state.r_df = create_and_show_df(
@@ -140,6 +134,7 @@ def main():
             st.session_state.model_regressions_df["const"] = None
             st.session_state.model_regressions_df["r_squared"] = None
             st.session_state.model_regressions_df["Test name"] = None
+            st.session_state.model_regressions_df["Test id"] = None
 
             # Try to fit a linear regression model and display the results
             st.session_state.n_counter = 0
@@ -213,6 +208,8 @@ def main():
 
                                     filtered_dicts[0]["r_squared"] = model.rsquared_adj
                                     filtered_dicts[0]["Test name"] = test_name
+                                    filtered_dicts[0]["Test id"] = st.session_state.n_counter
+
 
                                     # Append the row
                                     st.session_state.model_regressions_df = pd.concat(
@@ -268,6 +265,10 @@ def main():
                 f"\n All combinations of independent (x) variables ({st.session_state.n_counter+1} tests), "
                 f"\n sorted by adjusted r squared highest to lowest"
             )
+            # extract min/max in order to apply filtering
+            regression_min = st.session_state.model_regressions_df.min()
+            regressions_max = st.session_state.model_regressions_df.max()
+            st.session_state.regressions_min_max_df = pd.DataFrame([regression_min,regressions_max])
             with st.expander("Regression outputs"):
                 # after test filtering is applied
                 if st.session_state.model_regressions_filtered is not None:
@@ -279,10 +280,7 @@ def main():
                     st.session_state.selected_regression = st.dataframe(
                         st.session_state.model_regressions_df, on_select="rerun"
                     )
-                 # extract min/max in order to apply filtering
-                regression_min = st.session_state.model_regressions_df.min()
-                regressions_max = st.session_state.model_regressions_df.max()
-                st.session_state.regressions_min_max_df = pd.DataFrame([regression_min,regressions_max])
+                 
             try:
                 st.session_state.reg_sel = st.text_input(
                     "Select a test from the table above:",
@@ -410,8 +408,6 @@ def main():
                                ) # Save as HTML
                 st.session_state.regression_outputs[st.session_state.reg_sel]['durbin watson']
                 st.session_state.regression_outputs[st.session_state.reg_sel]['log likelihood']
-                st.session_state.regression_outputs[st.session_state.reg_sel]['t stats']
-                st.session_state.regression_outputs[st.session_state.reg_sel]['t stats']
     else:
         st.subheader(
             'Please load traffic data using the "Data exploration" page before navigating back to this page.'
