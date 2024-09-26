@@ -238,6 +238,12 @@ def main():
                                     st.session_state.reg_residuals[test_name] = model.resid
                                     st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
 
+                                    # st.session_state.regr_tests_and_cols_dict[test_name] = (
+                                    #     st.session_state.x_sel_reg
+                                    # )
+                                    # st.session_state.reg_residuals[test_name] = model.resid
+                                    # st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
+
                                     # if x_elements == len(st.session_state.x_sel_l) - 1 and i == len(x_combinations) - 1:
 
 
@@ -327,6 +333,10 @@ def main():
         # create a list of test to loop through and calculate all forecasts from
         if st.session_state.model_regressions_df is not None:
             st.session_state.test_list = st.session_state.model_regressions_df.index.to_list()
+            # for test_name in st.session_state.test_list:
+                # st.session_state.test_names_and_ids[test_name] = st.session_state.model_regressions_df.loc[test_name,'Test id']
+            # for test_id in st.session_state.test_names_and_ids:
+                # st.session_state.test_list
             try:
                 st.session_state.y_sel = st.session_state.y_sel_l.split("l: ")[1]
             except IndexError:
@@ -336,10 +346,10 @@ def main():
             for test in st.session_state.test_list:
                 if st.session_state.model_regressions_df is not None:
                     try:
-                        coeff_df = pd.DataFrame(
+                        st.session_state.coeff_df = pd.DataFrame(
                             st.session_state.model_regressions_df.loc[test]
                         ).transpose()
-                        st.session_state.coeff_dict[test] = coeff_df
+                        st.session_state.coeff_dict[test] = st.session_state.coeff_df
                     except KeyError:
                         st.write("")
                 if (test is not None and st.session_state.regr_tests_and_cols_dict != {}):
@@ -347,7 +357,7 @@ def main():
 
 
 
-
+                    # print(st.session_state.test_names_and_ids[test_id])
                     st.session_state.bc_plot_df = backcast_df(st.session_state.df,st.session_state.r_df,test,
                                                               st.session_state.y_sel_l[3:],
                                                               st.session_state.regr_tests_and_cols_dict[test],
@@ -360,31 +370,56 @@ def main():
 
             if st.session_state.reg_sel is not None:
                 st.subheader("Regression coefficients for selected test")
-                coeff_df = st.data_editor(st.session_state.coeff_dict[st.session_state.reg_sel], num_rows="dynamic")
+                st.session_state.coeff_df = st.data_editor(st.session_state.coeff_dict[st.session_state.reg_sel], num_rows="dynamic")
+
+
+
+
+            # update backcast
+                try:
+                    st.session_state.coeff_dict[st.session_state.reg_sel] = st.session_state.coeff_df
+                except KeyError:
+                    st.write("")
+                if (st.session_state.reg_sel is not None and st.session_state.regr_tests_and_cols_dict != {}):
+                    st.session_state.bc_plot_df = backcast_df(st.session_state.df,st.session_state.r_df,st.session_state.reg_sel,
+                                                              st.session_state.y_sel_l[3:],
+                                                              st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel],
+                                                              st.session_state.coeff_dict
+                                                              )
+                    # print(st.session_state.bc_plot_df)
+                    # st.session_state.elast_dict[test] = elast_df
+
+                    st.session_state.bc_dict[st.session_state.reg_sel] = st.session_state.bc_plot_df
+
+
+
+
+
+
                 # st.session_state.coeff_dict[st.session_state.reg_sel] = coeff_df
                 #TODO: run a function here that updates bc_df
                 st.subheader('Derived equation from current regression test')
                 with st.expander('Show regression equation'):
                     st.latex(fr'''
-                                    \ln(\text Traffic_t) = {coeff_df['const'][0]:.2f}  + \epsilon_t
+                                    \ln(\text Traffic_t) = {st.session_state.coeff_df['const'][0]:.2f}  + \epsilon_t
                                     ''')
-                    for col in coeff_df.columns[:-2]:
-                        if coeff_df[col][0]>0:
-                            st.latex(rf'+ {coeff_df[col][0]:.2f}\;ln({col[5:]}_t)')
+                    for col in st.session_state.coeff_df.columns[:-2]:
+                        if st.session_state.coeff_df[col][0]>0:
+                            st.latex(rf'+ {st.session_state.coeff_df[col][0]:.2f}\;ln({col[5:]}_t)')
                             # st.latex(type(col))
-                        elif coeff_df[col][0]<0:
-                            st.latex(rf'{coeff_df[col][0]:.2f}\;ln({col[5:]}_t)')
+                        elif st.session_state.coeff_df[col][0]<0:
+                            st.latex(rf'{st.session_state.coeff_df[col][0]:.2f}\;ln({col[5:]}_t)')
                         else:
                             pass
                 with st.expander('Show equation solved for traffic'):
                     st.latex(fr'''
-                                                    Traffic_t = e^{{{coeff_df['const'][0]:.2f} + \epsilon_t}} 
+                                                    Traffic_t = e^{{{st.session_state.coeff_df['const'][0]:.2f} + \epsilon_t}} 
                                                     ''')
-                    for col in coeff_df.columns[:-2]:
-                        if math.isnan(coeff_df[col][0]):
+                    for col in st.session_state.coeff_df.columns[:-2]:
+                        if math.isnan(st.session_state.coeff_df[col][0]):
                             pass
                         else:
-                            st.latex(rf'\cdot({col[5:]}_t)^{{{coeff_df[col][0]:.2f}}}')
+                            st.latex(rf'\cdot({col[5:]}_t)^{{{st.session_state.coeff_df[col][0]:.2f}}}')
 
                 st.header("Backcast:")
                 st.session_state.bc_plot_df = st.session_state.bc_dict[st.session_state.reg_sel]

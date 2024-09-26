@@ -182,10 +182,10 @@ def backcast_df(df,r_df,test,y_col,x_cols,coeff_dict):
 
     # print(df[y_col].head())
     # print(r_df[x_cols].head())
+    # print(coeff_dict)
     bc_df = pd.concat([df[y_col],r_df[x_cols]],axis=1)
     # print(coeff_dict[test])
     # product_for_exp = 1
-
     for col in coeff_dict[test]:
         col_coeff = coeff_dict[test][col][0]
         if np.isnan(col_coeff):

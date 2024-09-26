@@ -146,12 +146,16 @@ def initialise_session_state():
             ]
     if "coeff_dict" not in st.session_state:
         st.session_state.coeff_dict = {}
+    if "coeff_df" not in st.session_state:
+        st.session_state.coeff_df = None
     if "elast_dict" not in st.session_state:
         st.session_state.elast_dict = {}##
     if "bc_dict" not in st.session_state:
         st.session_state.bc_dict = {}
     if "test_list" not in st.session_state:
         st.session_state.test_list = None
+    if "test_names_and_ids" not in st.session_state:
+        st.session_state.test_names_and_ids = {}
     if "bc_plot_dict" not in st.session_state:
         st.session_state.bc_plot_dict = {}
     if "x_interaction_table" not in st.session_state:
