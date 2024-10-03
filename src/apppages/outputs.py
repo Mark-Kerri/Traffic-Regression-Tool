@@ -3,11 +3,13 @@ from apppages.utils.excel import export_to_excel,reformat_excel
 import pandas as pd
 def main():
     st.header('Export outputs')
-    # st.text(st.session_state.reg_sel)
     df = st.session_state.model_regressions_df.iloc[st.session_state.selected_regression['selection']['rows']]
-    output_summary_df = st.dataframe(df, on_select="rerun")
+    df_mod = df#.set_index('Test id')
+    output_summary_df = st.dataframe(df_mod, on_select="rerun")
 
-    df_t = df.T
+    # df_t = df.T
+    df_t = df_mod.T
+
     # df_t.index = [i[3:] for i in df_t.index if i.startswith('l')]
 
     # df_t = st.dataframe(df_t, on_select="rerun")
