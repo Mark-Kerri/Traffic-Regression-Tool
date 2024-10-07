@@ -48,6 +48,7 @@ for the tool, ensuring consistency and accuracy in the data analysis.
 """
 
 import os
+import io
 from copy import copy
 from calendar import month_abbr
 import xlsxwriter
@@ -199,12 +200,19 @@ def create_input_template(
         add_variables_with_timeline(
             ws, x_variables, "Independent Variables", last_row + 5, timelines
         )
-        ws['H50'] = timeline_inputs["Timestep"]
+        ws["H50"] = timeline_inputs["Timestep"]
         output_path = os.path.join(output_folder_path, f"{file_name}.xlsx")
-        wb.save(output_path)
+        # wb.save(output_path)
+        # wb.close()
+
+        # Save the workbook to an in-memory buffer
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)  # Reset buffer pointer to the beginning
         wb.close()
 
         print(f"Template created successfully: {output_path}")
+        return buffer
 
     except FileNotFoundError:
         print(f"Template file not found at path: {TEMPLATE_PATH}")
@@ -411,106 +419,155 @@ def spreadsheet_to_df(input_file_path):
     timestep = sheet.cell(row=50, column=8).value
     return df, df_index, var_dict, timestep
 
+
 # def export_to_excel(coeff_df,df,summary_df,residuals_df,path):
 
-def export_to_excel(regressions_df,g_df,test_name,coeff_df,summary_df,residuals_df,path,forecast_df):
+
+def export_to_excel(
+    regressions_df,
+    g_df,
+    test_name,
+    coeff_df,
+    summary_df,
+    residuals_df,
+    path,
+    forecast_df,
+):
 
     # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
     workbook_test_name = test_name
-    if len(test_name)>20:
-        shortened_test_name_elements = [x[:3] for x in test_name.split('-')]
-        workbook_test_name = ''.join(shortened_test_name_elements)
-        if len(workbook_test_name)>20:
-            workbook_test_name = workbook_test_name[15:] + 'et al'
+    if len(test_name) > 20:
+        shortened_test_name_elements = [x[:3] for x in test_name.split("-")]
+        workbook_test_name = "".join(shortened_test_name_elements)
+        if len(workbook_test_name) > 20:
+            workbook_test_name = workbook_test_name[15:] + "et al"
     current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
-    cols = [x for x in forecast_df.columns if x.startswith('y:') or x == 'Forecast y']
+    cols = [x for x in forecast_df.columns if x.startswith("y:") or x == "Forecast y"]
     forecast_df = forecast_df[cols]
     forecast_df_cols = len(forecast_df.columns)
-    full_output_path = os.path.join(path,f'{current_timestamp}_{workbook_test_name}_output.xlsx')
-    with pd.ExcelWriter(full_output_path, engine='xlsxwriter') as writer:
-
+    full_output_path = os.path.join(
+        path, f"{current_timestamp}_{workbook_test_name}_output.xlsx"
+    )
+    with pd.ExcelWriter(full_output_path, engine="xlsxwriter") as writer:
 
         # all regressions
-        regressions_df.to_excel(writer, sheet_name=f'All regressions', index=True)
-        ws_regressions = writer.sheets[f'All regressions']
+        regressions_df.to_excel(writer, sheet_name=f"All regressions", index=True)
+        ws_regressions = writer.sheets[f"All regressions"]
         ws_regressions = ws_regressions.set_column(0, 0, 85)
         # Define styles for bold text and grey background
         bold_font = Font(bold=True)
-        grey_fill = PatternFill(start_color="C0C0C0", end_color="C0C0C0", fill_type="solid")
-
-
-        
-
+        grey_fill = PatternFill(
+            start_color="C0C0C0", end_color="C0C0C0", fill_type="solid"
+        )
 
         # add metadata
         # metadata = pd.DataFrame(data=base_year_datapoints)
         # metadata.to_excel(writer, sheet_name=f'Base year', index=False)
 
         # Write each dataframe to a different worksheet.
-        coeff_df.to_excel(writer, sheet_name=f'{workbook_test_name} Coeffs', index=True)
+        coeff_df.to_excel(writer, sheet_name=f"{workbook_test_name} Coeffs", index=True)
         summary_tables = pd.DataFrame()
         for table in summary_df.tables:
-            summary_tables = pd.concat([summary_tables,pd.DataFrame(table)])
-            summary_tables.to_excel(writer, sheet_name=f'{workbook_test_name} Summ', index=False)
-        residuals_df.to_excel(writer, sheet_name=f'{workbook_test_name} Rsdl', index=True)
+            summary_tables = pd.concat([summary_tables, pd.DataFrame(table)])
+            summary_tables.to_excel(
+                writer, sheet_name=f"{workbook_test_name} Summ", index=False
+            )
+        residuals_df.to_excel(
+            writer, sheet_name=f"{workbook_test_name} Rsdl", index=True
+        )
 
-        ws_coeff = writer.sheets[f'{workbook_test_name} Coeffs']
+        ws_coeff = writer.sheets[f"{workbook_test_name} Coeffs"]
         ws_coeff = ws_coeff.set_column(0, 0, 25)
 
-
         workbook = writer.book
-        worksheet = writer.sheets[f'{workbook_test_name} Rsdl']
+        worksheet = writer.sheets[f"{workbook_test_name} Rsdl"]
 
         # Define the chart object
-        chart = workbook.add_chart({'type': 'scatter'})
+        chart = workbook.add_chart({"type": "scatter"})
 
         # Add the first series (Column B as Y values)
         # chart.add_series({'values': f'{test_name} Rsdl!$A$1:$A$5'})
         # chart.add_series({'values': f'{test_name} Rsdl!$B$1:$B$5'})
-        for i in range(1,4):
-            chart.add_series({
-                'name':[f'{workbook_test_name} Rsdl', 0, i, 0, i],
-                'categories': [f'{workbook_test_name} Rsdl', 1, 0, len(residuals_df), 0],
-                'values': [f'{workbook_test_name} Rsdl', 1, i, len(residuals_df), i]})
+        for i in range(1, 4):
+            chart.add_series(
+                {
+                    "name": [f"{workbook_test_name} Rsdl", 0, i, 0, i],
+                    "categories": [
+                        f"{workbook_test_name} Rsdl",
+                        1,
+                        0,
+                        len(residuals_df),
+                        0,
+                    ],
+                    "values": [
+                        f"{workbook_test_name} Rsdl",
+                        1,
+                        i,
+                        len(residuals_df),
+                        i,
+                    ],
+                }
+            )
 
         # Set chart title and labels
-        chart.set_title({'name': 'Residuals scatter plot'})
-        chart.set_x_axis({'name': 'Time'})
-        chart.set_y_axis({'name': 'Residuals'})
+        chart.set_title({"name": "Residuals scatter plot"})
+        chart.set_x_axis({"name": "Time"})
+        chart.set_y_axis({"name": "Residuals"})
 
         # Insert the chart into the worksheet
-        worksheet.insert_chart('F2', chart)
+        worksheet.insert_chart("F2", chart)
 
-        forecast_df.to_excel(writer, sheet_name=f'{workbook_test_name} Predicted', index=True)
+        forecast_df.to_excel(
+            writer, sheet_name=f"{workbook_test_name} Predicted", index=True
+        )
 
-        worksheet = writer.sheets[f'{workbook_test_name} Predicted']
+        worksheet = writer.sheets[f"{workbook_test_name} Predicted"]
 
         # Define the chart object
-        chart = workbook.add_chart({'type': 'line'})
+        chart = workbook.add_chart({"type": "line"})
 
         # Add the first series (Column B as Y values)
         # chart.add_series({'values': f'{test_name} Rsdl!$A$1:$A$5'})
         # chart.add_series({'values': f'{test_name} Rsdl!$B$1:$B$5'})
-        for i in range(1,forecast_df_cols+1):
-            chart.add_series({
-                'name':[f'{workbook_test_name} Predicted', 0, i, 0, i],
-                'categories': [f'{workbook_test_name} Predicted', 1, 0, len(forecast_df), 0],
-                'values': [f'{workbook_test_name} Predicted', 1, i, len(forecast_df), i]})
+        for i in range(1, forecast_df_cols + 1):
+            chart.add_series(
+                {
+                    "name": [f"{workbook_test_name} Predicted", 0, i, 0, i],
+                    "categories": [
+                        f"{workbook_test_name} Predicted",
+                        1,
+                        0,
+                        len(forecast_df),
+                        0,
+                    ],
+                    "values": [
+                        f"{workbook_test_name} Predicted",
+                        1,
+                        i,
+                        len(forecast_df),
+                        i,
+                    ],
+                }
+            )
 
         # Set chart title and labels
-        chart.set_title({'name': 'Predicted traffic plot'})
-        chart.set_x_axis({'name': 'Time'})
-        chart.set_y_axis({'name': 'Predicted AADT'})
+        chart.set_title({"name": "Predicted traffic plot"})
+        chart.set_x_axis({"name": "Time"})
+        chart.set_y_axis({"name": "Predicted AADT"})
 
         # Insert the chart into the worksheet
-        worksheet.insert_chart('I2', chart)
+        worksheet.insert_chart("I2", chart)
 
-        g_df.to_excel(writer, sheet_name=f'{workbook_test_name} regr inputs', index=True)
+        g_df.to_excel(
+            writer, sheet_name=f"{workbook_test_name} regr inputs", index=True
+        )
     return full_output_path
-def reformat_excel(file_path,test_name):
+
+
+def reformat_excel(file_path, test_name):
     # Load the workbook and select the desired worksheet
     wb = load_workbook(file_path)
-    ws = wb['All regressions']
+    ws = wb["All regressions"]
 
     # Define styles for bold text and grey background
     bold_font = Font(bold=True)
@@ -521,18 +578,20 @@ def reformat_excel(file_path,test_name):
         for cell in row:
             if cell.value == test_name:
                 row_number = cell.row
-                
+
                 # Apply formatting to the entire row
                 for cell_in_row in ws[row_number]:
                     cell_in_row.font = bold_font
                     cell_in_row.fill = grey_fill
-                
+
                 # Save the modified workbook
                 wb.save(file_path)
                 break
     # Format numbers to 2 decimal places in Column B (or any other numerical columns)
-    for row in ws.iter_rows(min_row=2, min_col=2, max_col=13):  # Adjust column range for other numerical columns
+    for row in ws.iter_rows(
+        min_row=2, min_col=2, max_col=13
+    ):  # Adjust column range for other numerical columns
         for cell in row:
-            cell.number_format = '0.000'  # 2 decimal places
+            cell.number_format = "0.000"  # 2 decimal places
 
     wb.save(file_path)

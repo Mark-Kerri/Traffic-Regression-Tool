@@ -165,18 +165,18 @@ def main():
             "End Timestep": end_timestep,
         }
 
+        # try:
+        #     if not output_folder_path:
+        #         raise ValueError("Output folder path cannot be empty.")
+
+        #     # Validate if the output folder exists
+        #     output_folder = Path(output_folder_path)
+        #     if not output_folder.exists():
+        #         raise FileNotFoundError(
+        #             f"The folder path '{output_folder_path}' does not exist."
+        #         )
         try:
-            if not output_folder_path:
-                raise ValueError("Output folder path cannot be empty.")
-
-            # Validate if the output folder exists
-            output_folder = Path(output_folder_path)
-            if not output_folder.exists():
-                raise FileNotFoundError(
-                    f"The folder path '{output_folder_path}' does not exist."
-                )
-
-            create_input_template(
+            input_template = create_input_template(
                 name_variables,
                 st.session_state.y_vars,
                 st.session_state.x_vars,
@@ -185,8 +185,16 @@ def main():
                 output_folder_path,
             )
             st.success("Excel template generated successfully!")
-            inputs_file_path = output_folder / f"{file_name}.xlsx"
-            st.session_state.inputs_file_path = inputs_file_path
+            # inputs_file_path = output_folder / f"{file_name}.xlsx"
+            # st.session_state.inputs_file_path = inputs_file_path
+
+            # Create a download button for the user to download the Excel file
+            st.download_button(
+                label="Download Excel file",
+                data=input_template,
+                file_name=f"{file_name}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
 
         except FileNotFoundError as fnf_error:
             st.error(f"File not found error: {fnf_error}")
