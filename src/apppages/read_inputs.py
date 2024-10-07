@@ -26,17 +26,18 @@ def main():
     )
     st.header("Upload a Completed Template:")
 
-    input_file_path = st.text_input(
-        "Enter the full file path:",
-        value=st.session_state.inputs_file_path,
-        # value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
-    )
-    if input_file_path is not None:
-        try:
-            if input_file_path[0] == '"':
-                input_file_path = input_file_path.replace('"', '')
-        except IndexError:
-            pass
+    # input_file_path = st.text_input(
+    #     "Enter the full file path:",
+    #     value=st.session_state.inputs_file_path,
+    #     # value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
+    # )
+    # if input_file_path is not None:
+    #     try:
+    #         if input_file_path[0] == '"':
+    #             input_file_path = input_file_path.replace('"', '')
+    #     except IndexError:
+    #         pass
+    input_file_path = st.file_uploader("Choose an Excel file", type=["xlsx", "xls"])
     if st.button("Read spreadsheet"):
         (
             st.session_state.df,
@@ -47,7 +48,9 @@ def main():
         st.session_state.prd = st.session_state.prd_dict[st.session_state.timestep]
         st.session_state.inputs_file_path = input_file_path
 
-    st.session_state.output_path = st.text_input('Type the output folder path below:',value='outputs')
+    st.session_state.output_path = st.text_input(
+        "Type the output folder path below:", value="outputs"
+    )
 
     if st.session_state.df is not None:
         st.header("Filter Timeline:")
@@ -101,9 +104,10 @@ def main():
                     y_cols,
                     data_container,
                 )
-    if st.button('Clear cache'):
+    if st.button("Clear cache"):
         for key in st.session_state.keys():
             del st.session_state[key]
+
 
 def data_selection_buttons(
     slider_value_start: int,
