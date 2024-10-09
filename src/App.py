@@ -58,6 +58,8 @@ def initialise_session_state():
         )
     if "df" not in st.session_state:
         st.session_state.df = None
+    if "g_df" not in st.session_state:
+        st.session_state.g_df = None
     if "df_index" not in st.session_state:
         st.session_state.df_index = None
     if "g_df_idx" not in st.session_state:

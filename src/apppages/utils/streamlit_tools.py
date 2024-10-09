@@ -58,7 +58,7 @@ def create_and_show_df(df, slider_value_start, slider_value_end, x_sel, y_sel,di
     return filt_df
 
 
-def visualise_data(df):
+def visualise_data(df,plot_indexed=True):
     """
     Visualize data with interactive line charts using Plotly and Streamlit.
 
@@ -91,17 +91,18 @@ def visualise_data(df):
     fig.update_layout(xaxis_title="Timeline", yaxis_title="Variable")
     st.plotly_chart(fig)
 
-    # Create a line plot for the indexed data (base-100)
-    df_indexed = 100 * (df / df.iloc[0, :])
-    fig = px.line(
-        df_indexed,
-        x=df_indexed.index,
-        y=df_indexed.columns,
-        title="Interactive chart of each variable indexed to base-100 over time",
-        color_discrete_sequence=st.session_state.custom_colors
-    )
-    fig.update_layout(xaxis_title="Timeline", yaxis_title="Indexed variable")
-    st.plotly_chart(fig)
+    if plot_indexed == True:
+        # Create a line plot for the indexed data (base-100)
+        df_indexed = 100 * (df / df.iloc[0, :])
+        fig = px.line(
+            df_indexed,
+            x=df_indexed.index,
+            y=df_indexed.columns,
+            title="Interactive chart of each variable indexed to base-100 over time",
+            color_discrete_sequence=st.session_state.custom_colors
+        )
+        fig.update_layout(xaxis_title="Timeline", yaxis_title="Indexed variable")
+        st.plotly_chart(fig)
 
 
 def stringify_g_df(i: int = 0) -> str:
@@ -146,8 +147,6 @@ def log_df(df):
         elif var_type == "pct_val_or_dummy":
             df["l: " + df_col] = df[df_col]
 
-        elif var_type == "pct_change":
-            df["l: " + df_col] = df[df_col] + 1
 
 
     # Filter growth columns and drop rows with all NaN values
@@ -219,3 +218,31 @@ def backcast_df(df,r_df,test,y_col,x_cols,coeff_dict):
                 pass
     bc_df['Forecast y'] = np.exp(bc_df['y exp comp'])
     return bc_df
+
+def growth_df(df):
+    """
+    Calculate growth rates for variables in the dataframe based on their types.
+
+    Parameters:
+    df (pd.DataFrame): The dataframe containing the original data.
+
+    Returns:
+    tuple: A tuple containing the growth dataframe and its index.
+    """
+    prd = st.session_state.prd# Quarterly data
+
+    # Identify columns of each type and calculate growth rates
+    for df_col in df.columns:
+        var_type = st.session_state.var_dict[df_col[2:]]
+        if var_type == "abs":
+            df["g: " + df_col] = df[df_col].pct_change(periods=prd) + 1
+        elif var_type == "pct_val_or_dummy":
+            df["g: " + df_col] = np.exp(df[df_col] - df[df_col].shift(prd))
+
+
+    # Filter growth columns and drop rows with all NaN values
+    g_cols = [c for c in df.columns if c.startswith("g:")]
+    g_df = df[g_cols].dropna(how="all")
+    g_df_idx = g_df.index
+
+    return g_df, g_df_idx

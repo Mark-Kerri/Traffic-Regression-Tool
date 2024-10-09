@@ -61,7 +61,7 @@ def main():
         # Slider for selecting the time range to analyze
         st.session_state.slider_value_start, st.session_state.slider_value_end = (
             st.select_slider(
-                "Choose the range of points to be plotted",
+                "Choose the range of points to be used",
                 options=range(0, len(st.session_state.log_df)),
                 value=(0, len(st.session_state.log_df) - 1),
                 format_func=stringify_l_df,
@@ -277,14 +277,14 @@ def main():
             st.session_state.regressions_min_max_df = pd.DataFrame([regression_min,regressions_max])
             with st.expander("Regression outputs"):
                 # after test filtering is applied
-                if st.session_state.model_regressions_filtered is not None:
+                if st.session_state.model_regressions_filtered is None:
                     st.session_state.selected_regression = st.dataframe(
-                        st.session_state.model_regressions_filtered, on_select="rerun"
+                        st.session_state.model_regressions_df, on_select="rerun"
                     )
                 # before any filtering is applied on any of the columns
                 else:
                     st.session_state.selected_regression = st.dataframe(
-                        st.session_state.model_regressions_df, on_select="rerun"
+                        st.session_state.model_regressions_filtered, on_select="rerun"
                     )
                  
             try:

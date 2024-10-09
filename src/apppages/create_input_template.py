@@ -63,7 +63,7 @@ def main():
     y_var_name = st.text_input("Dependent Variable Name", key="y_name")
     y_var_type = st.selectbox(
         "Dependent Variable Type",
-        ["abs", "pct_change", "pct_val_or_dummy"],
+        ["abs", "pct_val_or_dummy"],
         key="y_type",
     )
     if st.button("Add Dependent Variable"):
@@ -94,7 +94,7 @@ def main():
     x_var_name = st.text_input("Independent Variable Name", key="x_name")
     x_var_type = st.selectbox(
         "Independent Variable Type",
-        ["abs", "pct_change", "pct_val_or_dummy"],
+        ["abs", "pct_val_or_dummy"],
         key="x_type",
     )
     if st.button("Add Independent Variable"):

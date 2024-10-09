@@ -8,7 +8,7 @@ data in both table and chart formats.
 
 import streamlit as st
 from apppages.utils.excel import spreadsheet_to_df
-from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify
+from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify, growth_df
 
 DEFAULT_FILE_PATH_FOR_TESTING = r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data\reg_input\Development Annual Traffic Data Regression Inputs.xlsx"
 
@@ -48,9 +48,6 @@ def main():
         st.session_state.prd = st.session_state.prd_dict[st.session_state.timestep]
         st.session_state.inputs_file_path = input_file_path
 
-    st.session_state.output_path = st.text_input(
-        "Type the output folder path below:", value="outputs"
-    )
 
     if st.session_state.df is not None:
         st.header("Filter Timeline:")
@@ -104,6 +101,7 @@ def main():
                     y_cols,
                     data_container,
                 )
+
     if st.button("Clear cache"):
         for key in st.session_state.keys():
             del st.session_state[key]
@@ -144,6 +142,17 @@ def data_selection_buttons(
 
         st.header("Charts")
         visualise_data(filt_df)
+
+        st.subheader("Year on year chart")
+        # st.dataframe(filt_df)
+
+        st.session_state.g_df, st.session_state.g_df_idx = growth_df(filt_df)
+
+        # st.dataframe(st.session_state.g_df)
+        visualise_data(st.session_state.g_df,plot_indexed=False)
+
+
+
 
 
 if __name__ == "__page__":

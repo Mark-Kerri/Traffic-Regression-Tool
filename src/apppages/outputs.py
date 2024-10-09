@@ -6,25 +6,18 @@ def main():
     df = st.session_state.model_regressions_df.iloc[st.session_state.selected_regression['selection']['rows']]
     df_mod = df#.set_index('Test id')
     output_summary_df = st.dataframe(df_mod, on_select="rerun")
-
-    # df_t = df.T
     df_t = df_mod.T
 
-    # df_t.index = [i[3:] for i in df_t.index if i.startswith('l')]
-
-    # df_t = st.dataframe(df_t, on_select="rerun")
     tvalues_df = st.session_state.regression_outputs[st.session_state.reg_sel]['t stats']
-    # tvalues_df.columns = st.session_state.reg_sel                                    # st.dataframe(t_val_df)
-
-    # tvalues_df.index = [ i[1:] + ' t-val' for i in tvalues_df.index]
-    # tvalues_df = st.dataframe(tvalues_df,on_select="rerun")
-    combined_df = pd.concat([df_t,tvalues_df])
-    combined_df.sort_index(inplace=True)
-    tvalues_df = st.dataframe(combined_df,on_select="rerun")
 
     tests = df.index
-    st.session_state.output_path = st.text_input('Type the output folder path below:',value='outputs')
-
+    # st.session_state.output_path = st.text_input('Type the output folder path below:',value='outputs')
+    tvalues_df = pd.DataFrame(tvalues_df)
+    combined_df = pd.concat([df_t, tvalues_df], axis=0)
+    combined_df.sort_index(inplace=True)
+    st.dataframe(combined_df,on_select="rerun")
+    print(type(df_t))
+    print(type(tvalues_df))
 
     forecast_df = pd.DataFrame()
 
