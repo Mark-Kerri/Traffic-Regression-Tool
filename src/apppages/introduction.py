@@ -9,7 +9,7 @@ import streamlit as st
 
 def main():
     """Run main function to render the Streamlit app introduction page."""
-    st.title("Regression Analysis Tool")
+    st.title("Statistical Analysis Tool")
 
     st.markdown(
         """
