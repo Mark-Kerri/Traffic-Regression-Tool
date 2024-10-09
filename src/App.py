@@ -1,5 +1,5 @@
 """
-Regression Analysis Tool.
+Statistical Analysis Tool.
 
 This module implements a Streamlit-based web application designed to streamline the process of
 running multivariate regression analysis on timeseries data. The tool allows analysts to define
