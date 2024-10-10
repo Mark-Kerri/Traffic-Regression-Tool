@@ -9,6 +9,7 @@ data in both table and chart formats.
 import streamlit as st
 from apppages.utils.excel import spreadsheet_to_df
 from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify, growth_df
+import plotly.express as px
 
 DEFAULT_FILE_PATH_FOR_TESTING = r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data\reg_input\Development Annual Traffic Data Regression Inputs.xlsx"
 
@@ -143,16 +144,21 @@ def data_selection_buttons(
         st.header("Charts")
         visualise_data(filt_df)
 
+
+
         st.subheader("Year on year chart")
-        # st.dataframe(filt_df)
 
         st.session_state.g_df, st.session_state.g_df_idx = growth_df(filt_df)
 
         # st.dataframe(st.session_state.g_df)
         visualise_data(st.session_state.g_df,plot_indexed=False)
 
+        st.subheader("Scatter matrix")
+        st.dataframe(filt_df)
 
-
+        cols_for_plot = [c for c in filt_df.columns if c[:2] != 'g:']
+        fig = px.scatter_matrix(filt_df[cols_for_plot])
+        st.plotly_chart(fig)
 
 
 if __name__ == "__page__":

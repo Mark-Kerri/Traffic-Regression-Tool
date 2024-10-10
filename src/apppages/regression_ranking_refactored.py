@@ -11,6 +11,7 @@ import pandas as pd
 import streamlit as st
 import statsmodels.api as sm
 from statsmodels.stats.stattools import durbin_watson
+from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.stats.outliers_influence import OLSInfluence
 import plotly.express as px
 from apppages.utils.streamlit_tools import stringify, log_df, create_and_show_df, stringify_l_df, backcast_df
@@ -136,6 +137,9 @@ def main():
             st.session_state.model_regressions_df["Test name"] = None
             st.session_state.model_regressions_df["Test id"] = None
 
+            for var in st.session_state.x_sel_l:
+                st.session_state.model_regressions_df[var + ' t-val'] = None
+
             # Try to fit a linear regression model and display the results
             st.session_state.n_counter = 0
             for x_elements in range(len(st.session_state.x_sel_l)):
@@ -206,9 +210,16 @@ def main():
                                         }
                                     ]
 
+                                    t_vals = model.tvalues
+                                    t_vals.index = [i + ' t-val' for i in t_vals.index]
+                                    t_vals = t_vals.rename(test_name)
+                                    # st.text(type(t_vals))
                                     filtered_dicts[0]["r_squared"] = model.rsquared_adj
                                     filtered_dicts[0]["Test name"] = test_name
                                     filtered_dicts[0]["Test id"] = st.session_state.n_counter
+
+                                    for i in t_vals.index:
+                                        filtered_dicts[0][i] = t_vals[i]
 
 
                                     # Append the row
@@ -221,35 +232,36 @@ def main():
                                             ),
                                         ]
                                     )
-                                    t_vals = model.tvalues
-                                    t_vals.index = [i + ' t-val' for i in t_vals.index]
-                                    t_vals = t_vals.rename(test_name)
+
+
+                                    vif_data = pd.DataFrame()
+                                    try:
+                                        vif_data["Variable"] = x.columns
+
+                                        # Calculate VIF for each column
+                                        vif_data["VIF"] = [variance_inflation_factor(x.values, i) for i in
+                                                           range(x.shape[1])]
+                                    except ValueError:
+                                        pass
+
+                                    #TODO: create a df which includes both x coefficients with t stats so that users can filter based on tstats
+
+
                                     st.session_state.regression_outputs[test_name] = {
                                         'model summary':
-                                        model.summary(),
+                                            model.summary(),
                                         'durbin watson': durbin_watson(model.resid),
                                         'log likelihood': model.llf,
-                                        't stats': t_vals
-                                        }
-                                    
+                                        't stats': t_vals,
+                                        'vif': vif_data
+                                    }
                                     st.session_state.regr_tests_and_cols_dict[test_name] = (
                                         st.session_state.x_sel_reg
                                     )
                                     st.session_state.reg_residuals[test_name] = model.resid
                                     st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
-
-                                    # st.session_state.regr_tests_and_cols_dict[test_name] = (
-                                    #     st.session_state.x_sel_reg
-                                    # )
-                                    # st.session_state.reg_residuals[test_name] = model.resid
-                                    # st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
-
-                                    # if x_elements == len(st.session_state.x_sel_l) - 1 and i == len(x_combinations) - 1:
-
-
-
-
                                     st.session_state.n_counter += 1
+
                         except ValueError:
                             st.error(
                                 "Please make sure you chose at least one independent (x) variable."
@@ -302,6 +314,9 @@ def main():
             with st.expander("Regression summary table"):
                 st.text(st.session_state.regression_outputs[st.session_state.reg_sel]['model summary'])
             with st.expander("Regression further outputs"):
+                st.text('Variance Inflation Factor')
+                st.dataframe(st.session_state.regression_outputs[st.session_state.reg_sel]['vif'])
+
                 st.text('Regression residuals and fitted values')
 
                 st.session_state.residuals_df = pd.DataFrame()#,index=st.session_state.r_df.index)
@@ -311,25 +326,11 @@ def main():
 
                 if st.button('Display residuals data'):
                     st.dataframe(st.session_state.residuals_df)
-                # Plot residuals
-                # fig = px.line(
-                #     st.session_state.residuals_df,
-                #     x=st.session_state.residuals_df.index,
-                #     y=st.session_state.residuals_df.columns,
-                #     title=f"Residuals over time",
-                # )
-                # fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
+
                 columns = st.multiselect("Columns:", st.session_state.residuals_df.columns)
                 st.scatter_chart(data=st.session_state.residuals_df[columns])
-                # st.plotly_chart(fig)
-
-                # fig_inf = sm.graphics.influence_plot(st.session_state.reg_influence, criterion="cooks")
-                # fig_inf.tight_layout(pad=1.0)
-                # st.plotly_chart(fig_inf)
 
         # use the test name entered above to find the parameters from the equivalent test
-
-
         # create a list of test to loop through and calculate all forecasts from
         if st.session_state.model_regressions_df is not None:
             st.session_state.test_list = st.session_state.model_regressions_df.index.to_list()
@@ -441,7 +442,9 @@ def main():
                                                                          f"({st.session_state.bc_plot_df.index[0]} "
                                                                          f"-{st.session_state.bc_plot_df.index[-1]}).html")
                                ) # Save as HTML
+                st.text('Durbin Watson')
                 st.session_state.regression_outputs[st.session_state.reg_sel]['durbin watson']
+                st.text('Log likelihood')
                 st.session_state.regression_outputs[st.session_state.reg_sel]['log likelihood']
     else:
         st.subheader(
