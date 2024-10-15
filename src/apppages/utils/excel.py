@@ -146,13 +146,14 @@ def generate_timeline(timeline_inputs):
                 step_str = month_abbr[step]
             elif timestep == "Quarterly":
                 step_str = f"Q{step}"
+
             else:  # Yearly
                 step_str = ""
 
             list_2.append(step_str)
             list_3.append(f"{year} {step_str}".strip())
 
-    timelines = {"years": list_1, "steps": list_2, "combined": list_3}
+    timelines = {"years": list_1, "steps": list_2, "combined": list_3}#,"seasonality": list_4}
     return timelines
 
 
@@ -205,6 +206,34 @@ def create_input_template(
         # wb.save(output_path)
         # wb.close()
 
+        # fill in seasonality timelines here:
+        # find row number where "Seasonality" is mentioned on col D
+        # then iterate across columns and fill with 1s the rows where "Q1 " or "Jan" (First three characters?)
+        # match with the variable name
+        # workbook = openpyxl.load_workbook(input_file_path, data_only=True)
+        # sheet = workbook.active
+        var_col = 4  # start from Column D for variable names
+        seas_var_dict = {}
+        for row in range(1, ws.max_row + 1):
+            cell_value = ws.cell(row=row, column=var_col).value
+            if cell_value and 'Dependent Variable' in cell_value:
+                header_row = row
+                # print(header_row)
+            if cell_value and 'Seasonality' in cell_value:
+                seas_row_num = row
+                seas_var_ref = cell_value.split(' ')[0]
+                seas_var_dict[seas_row_num] = seas_var_ref
+                # print(seas_var_dict)
+
+
+        for seas_row,seas_ref in seas_var_dict.items():
+            for col in range(var_col+3,var_col+3+len(timelines["combined"])):
+                header_cell_value = ws.cell(row=header_row, column=col).value
+                if header_cell_value and seas_ref in header_cell_value:
+                    ws.cell(row=seas_row, column=col).value = 1
+                elif header_cell_value and seas_ref not in header_cell_value:
+                    ws.cell(row=seas_row, column=col).value = 0
+            # print(ws.cell(row=seas_row_num, column=col).value)
         # Save the workbook to an in-memory buffer
         buffer = io.BytesIO()
         wb.save(buffer)

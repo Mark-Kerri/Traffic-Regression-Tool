@@ -20,6 +20,7 @@ Modules:
 from pathlib import Path
 import streamlit as st
 from apppages.utils.excel import create_input_template  # pylint: disable=import-error
+from calendar import month_abbr
 
 
 def delete_x_y_variable(var_type, var_name):
@@ -154,6 +155,17 @@ def main():
         "Enter the file name (without quotes):", value=f"{project} Regression Inputs"
     )
 
+    # define seasonality here
+    seas_bool_default = timestep == "Monthly" or timestep == "Quarterly"
+    seas_bool = st.checkbox("Add seasonality variables?",value=seas_bool_default)
+    prd = st.session_state.prd_dict[timestep]
+    if seas_bool:
+        if timestep == "Quarterly":
+            for i in range(prd):
+                st.session_state.x_vars["Q" + str(i + 1) + " Seasonality"] = "pct_val_or_dummy"
+        if timestep == "Monthly":
+            for i in range(1,prd):
+                st.session_state.x_vars[month_abbr[i] + " Seasonality"] = "pct_val_or_dummy"
     # Button to generate Excel template
     if st.button("Generate Excel Template"):
         name_variables = {"Client": client, "Project": project}
