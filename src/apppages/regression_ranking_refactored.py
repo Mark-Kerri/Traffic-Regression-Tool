@@ -301,13 +301,13 @@ def main():
                 # after test filtering is applied
                 if st.session_state.model_regressions_filtered is None:
                     st.session_state.selected_regression = st.dataframe(
-                        st.session_state.model_regressions_df#[[col for col in st.session_state.model_regressions_df.columns if "t-val" not in col]]
+                        st.session_state.model_regressions_df[[col for col in st.session_state.model_regressions_df.columns if "t-val" not in col]]
                         , on_select="rerun"
                     )
                 # before any filtering is applied on any of the columns
                 else:
                     st.session_state.selected_regression = st.dataframe(
-                        st.session_state.model_regressions_filtered#[[col for col in st.session_state.model_regressions_filtered.columns if "t-val" not in col]]
+                        st.session_state.model_regressions_filtered[[col for col in st.session_state.model_regressions_filtered.columns if "t-val" not in col]]
                         , on_select="rerun"
                     )
                 # print(st.session_state.selected_regression.selection.rows)

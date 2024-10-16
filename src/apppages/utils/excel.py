@@ -445,7 +445,17 @@ def spreadsheet_to_df(input_file_path):
     df_index = df.index
 
     # Read timestep from cell H 50
-    timestep = sheet.cell(row=50, column=8).value
+    # timestep = sheet.cell(row=50, column=8).value
+    row_11_numbers = [cell.value for cell in sheet[11]]  # Row indexing in openpyxl starts from 1
+    my_series = pd.Series(row_11_numbers)
+    counts = my_series.value_counts(dropna=True)
+    prd = counts.max() ### check this
+    if prd == 4:
+        timestep = "Quarterly"
+    elif prd == 12:
+        timestep = "Monthly"
+    elif prd == 1:
+        timestep = "Yearly"
     return df, df_index, var_dict, timestep
 
 
@@ -463,13 +473,14 @@ def export_to_excel(
     forecast_df,
 ):
 
-    # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
-    workbook_test_name = test_name
-    if len(test_name) > 20:
-        shortened_test_name_elements = [x[:3] for x in test_name.split("-")]
-        workbook_test_name = "".join(shortened_test_name_elements)
-        if len(workbook_test_name) > 20:
-            workbook_test_name = workbook_test_name[15:] + "et al"
+    # # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
+    # workbook_test_name = test_name
+    # if len(test_name) > 20:
+    #     shortened_test_name_elements = [x[:3] for x in test_name.split("-")]
+    #     workbook_test_name = "".join(shortened_test_name_elements)
+    #     if len(workbook_test_name) > 20:
+    #         workbook_test_name = workbook_test_name[:15] + "+"
+    workbook_test_name = shorten_test_name(test_name)
     current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
     cols = [x for x in forecast_df.columns if x.startswith("y:") or x == "Forecast y"]
     forecast_df = forecast_df[cols]
@@ -477,7 +488,11 @@ def export_to_excel(
     full_output_path = os.path.join(
         path, f"{current_timestamp}_{workbook_test_name}_output.xlsx"
     )
-    with pd.ExcelWriter(full_output_path, engine="xlsxwriter") as writer:
+
+    # Create an in-memory buffer to hold the Excel file
+    buffer = io.BytesIO()
+
+    with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
 
         # all regressions
         regressions_df.to_excel(writer, sheet_name=f"All regressions", index=True)
@@ -494,7 +509,7 @@ def export_to_excel(
         # metadata.to_excel(writer, sheet_name=f'Base year', index=False)
 
         # Write each dataframe to a different worksheet.
-        coeff_df.to_excel(writer, sheet_name=f"{workbook_test_name} Coeffs", index=True)
+        coeff_df[~coeff_df.index.str.contains("t-val")].to_excel(writer, sheet_name=f"{workbook_test_name} Coeffs", index=True)
         summary_tables = pd.DataFrame()
         for table in summary_df.tables:
             summary_tables = pd.concat([summary_tables, pd.DataFrame(table)])
@@ -511,37 +526,27 @@ def export_to_excel(
         workbook = writer.book
         worksheet = writer.sheets[f"{workbook_test_name} Rsdl"]
 
-        # Define the chart object
+        # Define the chart object (scatter plot)
         chart = workbook.add_chart({"type": "scatter"})
 
-        # Add the first series (Column B as Y values)
-        # chart.add_series({'values': f'{test_name} Rsdl!$A$1:$A$5'})
-        # chart.add_series({'values': f'{test_name} Rsdl!$B$1:$B$5'})
-        for i in range(1, 4):
+        # Add multiple series to the scatter plot
+        for i in range(1, 4):  # Assuming 3 columns of Y-values
             chart.add_series(
                 {
-                    "name": [f"{workbook_test_name} Rsdl", 0, i, 0, i],
-                    "categories": [
-                        f"{workbook_test_name} Rsdl",
-                        1,
-                        0,
-                        len(residuals_df),
-                        0,
-                    ],
-                    "values": [
-                        f"{workbook_test_name} Rsdl",
-                        1,
-                        i,
-                        len(residuals_df),
-                        i,
-                    ],
+                    "name": [f"{workbook_test_name} Rsdl", 0, i],  # Column header as series name
+                    "categories": [f"{workbook_test_name} Rsdl", 1, 0, len(residuals_df), 0],  # X values (Column A)
+                    "values": [f"{workbook_test_name} Rsdl", 1, i, len(residuals_df), i],  # Y values (Columns B, C, D)
+                    "marker": {"type": "circle", "size": 5},
                 }
             )
 
         # Set chart title and labels
-        chart.set_title({"name": "Residuals scatter plot"})
-        chart.set_x_axis({"name": "Time"})
-        chart.set_y_axis({"name": "Residuals"})
+        chart.set_title({"name": "Residuals Scatter Plot"})
+        chart.set_x_axis({"name": "Time",
+                          # "label_position": "low",  # Set labels to appear low on the axis
+                          # "visible": True,  # Ensure the axis is visible
+                          })  # X-axis label
+        chart.set_y_axis({"name": "Residuals"})  # Y-axis label
 
         # Insert the chart into the worksheet
         worksheet.insert_chart("F2", chart)
@@ -590,12 +595,18 @@ def export_to_excel(
         g_df.to_excel(
             writer, sheet_name=f"{workbook_test_name} regr inputs", index=True
         )
-    return full_output_path
+        # Move the pointer of the buffer to the beginning
+        buffer.seek(0)
+
+    return buffer
 
 
-def reformat_excel(file_path, test_name):
+def reformat_excel(buffer, test_name):
+    workbook_test_name = shorten_test_name(test_name)
+    buffer.seek(0)  # Reset the buffer to the start before reading it
+
     # Load the workbook and select the desired worksheet
-    wb = load_workbook(file_path)
+    wb = load_workbook(buffer)
     ws = wb["All regressions"]
 
     # Define styles for bold text and grey background
@@ -614,13 +625,62 @@ def reformat_excel(file_path, test_name):
                     cell_in_row.fill = grey_fill
 
                 # Save the modified workbook
-                wb.save(file_path)
+                # wb.save(buffer)
                 break
-    # Format numbers to 2 decimal places in Column B (or any other numerical columns)
+    # Format numbers to 3 decimal places in Column B (or any other numerical columns)
     for row in ws.iter_rows(
-        min_row=2, min_col=2, max_col=13
+        min_row=2, min_col=2, max_col=22
     ):  # Adjust column range for other numerical columns
         for cell in row:
-            cell.number_format = "0.000"  # 2 decimal places
+            cell.number_format = "0.000"  # 3 decimal places
 
-    wb.save(file_path)
+
+    ws_coeff = wb[f"{workbook_test_name} Coeffs"]
+    adjust_column_width(ws_coeff)
+    # Format numbers to 3 decimal places in Column B (or any other numerical columns)
+    for row in ws_coeff.iter_rows(
+            min_row=2, min_col=2, max_col=2
+    ):  # Adjust column range for other numerical columns
+        for cell in row:
+            cell.number_format = "0.000"  # 3 decimal places
+
+
+    # Save the modified workbook to a new buffer
+    new_buffer = io.BytesIO()
+    wb.save(new_buffer)
+    new_buffer.seek(0)  # Reset buffer pointer to the beginning after saving
+
+    # Close the workbook to release resources
+    wb.close()
+
+    return new_buffer
+
+def shorten_test_name(test_name):
+    # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
+    if len(test_name) > 20:
+        shortened_test_name_elements = [x[:3] for x in test_name.split("-")]
+        workbook_test_name = "".join(shortened_test_name_elements)
+        if len(workbook_test_name) > 20:
+            workbook_test_name = workbook_test_name[:15] + "+"
+    else:
+        workbook_test_name = test_name
+    return workbook_test_name
+
+
+def adjust_column_width(worksheet):
+    # Loop over all columns in the worksheet
+    for col in worksheet.columns:
+        max_length = 0
+        column = col[0].column_letter  # Get the column letter (e.g., 'A', 'B', etc.)
+
+        # Iterate over all cells in the column, including the header
+        for cell in col:
+            try:
+                # Calculate the length of the cell's string representation
+                if cell.value:
+                    max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+
+        # Set the column width (adding a little extra for padding)
+        worksheet.column_dimensions[column].width = max_length + 2  # Adding some padding

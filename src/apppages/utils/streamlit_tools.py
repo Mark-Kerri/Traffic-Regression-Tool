@@ -54,6 +54,8 @@ def create_and_show_df(df, slider_value_start, slider_value_end, x_sel, y_sel,di
     if display_df:
         with st.expander("Expand to show data"):
             st.dataframe(data=filt_df)
+            # filt_df = st.data_editor(filt_df,num_rows="dynamic")
+
 
     return filt_df
 
