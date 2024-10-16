@@ -107,7 +107,8 @@ def main():
         for key in st.session_state.keys():
             del st.session_state[key]
 
-
+    if st.button("Next Page"):
+        st.switch_page("apppages/regression_ranking_refactored.py")
 def data_selection_buttons(
     slider_value_start: int,
     slider_value_end: int,
@@ -154,7 +155,7 @@ def data_selection_buttons(
         visualise_data(st.session_state.g_df,plot_indexed=False)
 
         st.subheader("Scatter matrix")
-        st.dataframe(filt_df)
+        # st.dataframe(filt_df)
 
         cols_for_plot = [c for c in filt_df.columns if c[:2] != 'g:']
         fig = px.scatter_matrix(filt_df[cols_for_plot])

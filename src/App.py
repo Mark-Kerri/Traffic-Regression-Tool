@@ -168,6 +168,8 @@ def initialise_session_state():
         st.session_state.x_combos_to_exclude = None
     if "parameter_filters" not in st.session_state:
         st.session_state.parameter_filters = None
+    if "param_t" not in st.session_state:
+        st.session_state.param_t = None
 def main():
     """Run main function to render the Streamlit app interface."""
     initialise_session_state()

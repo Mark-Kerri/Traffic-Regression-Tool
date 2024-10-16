@@ -156,16 +156,18 @@ def main():
     )
 
     # define seasonality here
-    seas_bool_default = timestep == "Monthly" or timestep == "Quarterly"
-    seas_bool = st.checkbox("Add seasonality variables?",value=seas_bool_default)
+    # seas_bool_default = timestep == "Monthly" or timestep == "Quarterly"
+    # seas_bool = st.checkbox("Add seasonality variables?",value=seas_bool_default)
     prd = st.session_state.prd_dict[timestep]
-    if seas_bool:
+    if st.button(f'Generate seasonality variables for all {timestep[:-2].lower()}s'):
         if timestep == "Quarterly":
             for i in range(prd):
                 st.session_state.x_vars["Q" + str(i + 1) + " Seasonality"] = "pct_val_or_dummy"
         if timestep == "Monthly":
-            for i in range(1,prd):
+            for i in range(1,prd+1):
                 st.session_state.x_vars[month_abbr[i] + " Seasonality"] = "pct_val_or_dummy"
+        st.warning(f'Please remove the reference {timestep[:-2].lower()} from the seasonality variables list above', icon="⚠️")
+
     # Button to generate Excel template
     if st.button("Generate Excel Template"):
         name_variables = {"Client": client, "Project": project}
@@ -208,6 +210,8 @@ def main():
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
 
+
+
         except FileNotFoundError as fnf_error:
             st.error(f"File not found error: {fnf_error}")
 
@@ -219,7 +223,9 @@ def main():
                 f"Permission error: {perm_error}. "
                 "Check if you have the right permissions for the output directory."
             )
-
+    if st.button("Clear cache"):
+        for key in st.session_state.keys():
+            del st.session_state[key]
     # Button to switch page to next step
     if st.button("Next Page"):
         st.switch_page("apppages/read_inputs.py")

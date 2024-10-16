@@ -6,8 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="14abbf4e-b44d-4ffd-8d52-2d0e6f6668ef" name="Changes" comment="Added process_spreadsheet_data as a separate streamlit page, added time series index in streamlit_tools.py, fixed the x/y col name typo, added plots of all time series in one chart and indexed base 100 plot">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/App.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/apppages/create_input_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/create_input_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/apppages/utils/excel.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/utils/excel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apppages/read_inputs.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/read_inputs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/apppages/regression_ranking_refactored.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/apppages/regression_ranking_refactored.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
