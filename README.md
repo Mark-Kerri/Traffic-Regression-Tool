@@ -13,7 +13,7 @@ A Python-based tool to determine elasticities to input independent variables usi
 - **Machine Learning Models**: Incorporate advanced ML models for improved prediction accuracy (planned for future sprints).
 
 ## Getting Started
-
+[README.md](README.md)
 ### Prerequisites
 
 - Python 3.8+

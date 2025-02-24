@@ -8,12 +8,10 @@ data in both table and chart formats.
 
 import streamlit as st
 from apppages.utils.excel import spreadsheet_to_df
-from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify
+from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify, growth_df
+import plotly.express as px
 
-DEFAULT_FILE_PATH_FOR_TESTING = (
-    r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data"
-    r"\reg_input\Development Test VKM Data Regression Inputs.xlsx"
-)
+DEFAULT_FILE_PATH_FOR_TESTING = r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data\reg_input\Development Annual Traffic Data Regression Inputs.xlsx"
 
 
 def main():
@@ -29,17 +27,28 @@ def main():
     )
     st.header("Upload a Completed Template:")
 
-    input_file_path = st.text_input(
-        "Enter the full file path (without quotes):",
-        value=st.session_state.inputs_file_path,
-        # value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
-    )
-
+    # input_file_path = st.text_input(
+    #     "Enter the full file path:",
+    #     value=st.session_state.inputs_file_path,
+    #     # value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
+    # )
+    # if input_file_path is not None:
+    #     try:
+    #         if input_file_path[0] == '"':
+    #             input_file_path = input_file_path.replace('"', '')
+    #     except IndexError:
+    #         pass
+    input_file_path = st.file_uploader("Choose an Excel file", type=["xlsx", "xls"])
     if st.button("Read spreadsheet"):
-        st.session_state.df, st.session_state.df_index, st.session_state.var_dict = (
-            spreadsheet_to_df(input_file_path)
-        )
+        (
+            st.session_state.df,
+            st.session_state.df_index,
+            st.session_state.var_dict,
+            st.session_state.timestep,
+        ) = spreadsheet_to_df(input_file_path)
+        st.session_state.prd = st.session_state.prd_dict[st.session_state.timestep]
         st.session_state.inputs_file_path = input_file_path
+
 
     if st.session_state.df is not None:
         st.header("Filter Timeline:")
@@ -94,7 +103,12 @@ def main():
                     data_container,
                 )
 
+    if st.button("Clear cache"):
+        for key in st.session_state.keys():
+            del st.session_state[key]
 
+    if st.button("Next Page"):
+        st.switch_page("apppages/regression_ranking_refactored.py")
 def data_selection_buttons(
     slider_value_start: int,
     slider_value_end: int,
@@ -119,7 +133,7 @@ def data_selection_buttons(
         None
     """
     with container:
-        st.header("Datatable")
+        st.header("Data")
         filt_df = create_and_show_df(
             st.session_state.df,
             slider_value_start,
@@ -130,6 +144,22 @@ def data_selection_buttons(
 
         st.header("Charts")
         visualise_data(filt_df)
+
+
+
+        st.subheader("Year on year chart")
+
+        st.session_state.g_df, st.session_state.g_df_idx = growth_df(filt_df)
+
+        # st.dataframe(st.session_state.g_df)
+        visualise_data(st.session_state.g_df,plot_indexed=False)
+
+        st.subheader("Scatter matrix")
+        # st.dataframe(filt_df)
+
+        cols_for_plot = [c for c in filt_df.columns if c[:2] != 'g:']
+        fig = px.scatter_matrix(filt_df[cols_for_plot])
+        st.plotly_chart(fig)
 
 
 if __name__ == "__page__":

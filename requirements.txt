@@ -10,3 +10,4 @@ pydocstyle
 black
 plotly
 matplotlib
+xlsxwriter
