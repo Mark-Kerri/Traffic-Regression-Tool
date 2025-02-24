@@ -6,7 +6,7 @@ from apppages.utils.streamlit_tools import stringify
 
 def main():
     # 4 for quarterly data
-    prd = st.session_state.prd_dict["Quarterly"]
+    prd = st.session_state.prd
 
     print(prd)
     st.set_page_config(page_title="Backcast")
@@ -63,7 +63,7 @@ def main():
     st.header("Growth rates:")
     # growth rate of GDP
     elast_df = (
-        st.session_state.g_df[st.session_state.x_sel_g]
+        st.session_state.log_df[st.session_state.x_sel_g]
         ** edited_df[st.session_state.x_sel_g].iloc[0][st.session_state.x_sel_g]
     )
     st.dataframe(elast_df)
