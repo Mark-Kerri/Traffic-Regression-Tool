@@ -190,7 +190,14 @@ def main():
                 index=0,
                 key="start_month_select",  # Default to January
             )
-            start_timestep_val = month_options.index(selected_start_month_name) + 1
+            start_timestep_val = (
+                month_options.index(
+                    selected_start_month_name
+                    if selected_start_month_name
+                    else "January"
+                )
+                + 1
+            )
         with col_end_period:
             selected_end_month_name = st.selectbox(
                 "End Month",
@@ -198,7 +205,12 @@ def main():
                 index=11,
                 key="end_month_select",  # Default to December
             )
-            end_timestep_val = month_options.index(selected_end_month_name) + 1
+            end_timestep_val = (
+                month_options.index(
+                    selected_end_month_name if selected_end_month_name else "December"
+                )
+                + 1
+            )
     elif timestep == "Quarterly":
         with col_start_period:
             start_timestep_val = st.number_input(
@@ -290,37 +302,47 @@ def main():
     # --- Button to generate Excel template ---
     st.divider()
     if st.button("Generate Excel Template", type="primary", use_container_width=True):
-        name_variables = {"Client": client, "Project": project}
-        timeline_inputs = {
-            "Timestep": timestep,
-            "Start Year": start_year,
-            "Start Timestep": start_timestep_val,
-            "End Year": end_year,
-            "End Timestep": end_timestep_val,
-        }
+        if not st.session_state.y_vars:
+            st.session_state.y_vars["Default_Y_Variable"] = "value"
+            st.info("Added a default Y variable as none were specified.")
 
-        try:
-            input_template_buffer = create_input_template(
-                name_variables,
-                st.session_state.y_vars,
-                st.session_state.x_vars,
-                timeline_inputs,
-                file_name,
-            )
-            st.success("Excel template generated successfully!")
+        if not st.session_state.x_vars:
+            st.session_state.x_vars["Default_X_Variable"] = "value"
+            st.info("Added a default X variable as none were specified.")
 
-            st.download_button(
-                label="Download Excel file",
-                data=input_template_buffer,
-                file_name=f"{file_name}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                key="download_template_btn",
-            )
+        # Proceed only if both Y and X variables exist
+        if st.session_state.y_vars and st.session_state.x_vars:
+            name_variables = {"Client": client, "Project": project}
+            timeline_inputs = {
+                "Timestep": timestep,
+                "Start Year": start_year,
+                "Start Timestep": start_timestep_val,
+                "End Year": end_year,
+                "End Timestep": end_timestep_val,
+            }
 
-        except FileNotFoundError as fnf_error:
-            st.error(f"Template file not found error: {fnf_error}")
-        except ValueError as val_error:
-            st.error(f"Value error: {val_error}")
+            try:
+                input_template_buffer = create_input_template(
+                    name_variables,
+                    st.session_state.y_vars,
+                    st.session_state.x_vars,
+                    timeline_inputs,
+                    file_name,
+                )
+                st.success("Excel template generated successfully!")
+
+                st.download_button(
+                    label="Download Excel file",
+                    data=input_template_buffer,
+                    file_name=f"{file_name}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key="download_template_btn",
+                )
+
+            except FileNotFoundError as fnf_error:
+                st.error(f"Template file not found error: {fnf_error}")
+            except ValueError as val_error:
+                st.error(f"Value error: {val_error}")
 
     # --- Button to switch page to next step ---
     if st.button("Next Page", use_container_width=True):
