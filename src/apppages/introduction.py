@@ -13,7 +13,7 @@ def main():
 
     st.markdown(
         """
-        ## Welcome to the Regression Analysis Tool
+        ## Welcome to the Statistical Analysis Tool
 
         This application is designed to streamline the process of running multivariate regression
         analysis on timeseries data. It enables analysts to work with multiple dependent and
@@ -30,21 +30,22 @@ def main():
           Here, you can load the completed template and visualise the data. This page is useful
           for exploring the data before running any regression analysis.
 
-        - **Page 3: Regression Control:**
-          On this page, you can specify the parameters for the regression analysis and review the
-          initial results. This is where you start to see how well the independent variables explain
-          the dependent variables.
+        - **Page 3: Regression Ranking:**
+          On this page, you define parameters to automatically run and rank multiple regression models.
+          You can then review detailed statistics, compare models, and select the most suitable one
+          for your analysis.
 
         - **Page 4: Model Evaluation:**
-          This page allows you to review the predictive power of the regression model against
-          historical data. You can also fine-tune the elasticities as needed.
+          This page (currently integrated within "Regression Ranking" after model selection) allows
+          you to review the predictive power of the selected regression model against historical data.
+          You can also fine-tune the elasticities (coefficients) as needed and see the impact.
 
-        - **Page 5: Curate Outputs:**
-          Finally, this page lets you curate the outputs from the analysis, ready for use in further
-          analysis or reporting. You can export these outputs in various formats.
+        - **Page 5: Outputs:**
+          Finally, this page lets you curate and export the outputs from the selected analysis,
+          ready for use in further analysis or reporting.
 
-        Navigate through the apppages to use the tool's functionalities and streamline your traffic
-        demand forecasting process.
+        Navigate through the pages using the sidebar to use the tool's functionalities and streamline
+        your traffic demand forecasting process.
         """
     )
 
