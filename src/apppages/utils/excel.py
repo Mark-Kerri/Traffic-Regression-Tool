@@ -26,7 +26,7 @@ Functions:
     strings.
 
 - create_input_template(name_variables, y_variables, x_variables,
-    timeline_inputs, file_name, output_folder_path):
+    timeline_inputs, file_name):
     Creates an Excel input template based on provided project details, variables,
     and timeline inputs. Handles exceptions related to file operations and
     input validation, saving the final template to the specified directory.
@@ -153,7 +153,11 @@ def generate_timeline(timeline_inputs):
             list_2.append(step_str)
             list_3.append(f"{year} {step_str}".strip())
 
-    timelines = {"years": list_1, "steps": list_2, "combined": list_3}#,"seasonality": list_4}
+    timelines = {
+        "years": list_1,
+        "steps": list_2,
+        "combined": list_3,
+    }  # ,"seasonality": list_4}
     return timelines
 
 
@@ -163,7 +167,6 @@ def create_input_template(
     x_variables,
     timeline_inputs,
     file_name,
-    output_folder_path,
 ):
     """
     Create an Excel input template based on project details, variables, and timeline inputs.
@@ -174,7 +177,6 @@ def create_input_template(
         x_variables (dict): Independent variables and their types.
         timeline_inputs (dict): Timeline details. Saves the timestep on cell H50 (see timeline_inputs["Timestep"] )
         file_name (str): Desired name for the output file.
-        output_folder_path (str): Directory path where the file will be saved.
 
     Raises:
         FileNotFoundError: If the template file is not found.
@@ -202,9 +204,6 @@ def create_input_template(
             ws, x_variables, "Independent Variables", last_row + 5, timelines
         )
         ws["H50"] = timeline_inputs["Timestep"]
-        output_path = os.path.join(output_folder_path, f"{file_name}.xlsx")
-        # wb.save(output_path)
-        # wb.close()
 
         # fill in seasonality timelines here:
         # find row number where "Seasonality" is mentioned on col D
@@ -216,18 +215,17 @@ def create_input_template(
         seas_var_dict = {}
         for row in range(1, ws.max_row + 1):
             cell_value = ws.cell(row=row, column=var_col).value
-            if cell_value and 'Dependent Variable' in cell_value:
+            if cell_value and "Dependent Variable" in cell_value:
                 header_row = row
                 # print(header_row)
-            if cell_value and 'Seasonality' in cell_value:
+            if cell_value and "Seasonality" in cell_value:
                 seas_row_num = row
-                seas_var_ref = cell_value.split(' ')[0]
+                seas_var_ref = cell_value.split(" ")[0]
                 seas_var_dict[seas_row_num] = seas_var_ref
                 # print(seas_var_dict)
 
-
-        for seas_row,seas_ref in seas_var_dict.items():
-            for col in range(var_col+3,var_col+3+len(timelines["combined"])):
+        for seas_row, seas_ref in seas_var_dict.items():
+            for col in range(var_col + 3, var_col + 3 + len(timelines["combined"])):
                 header_cell_value = ws.cell(row=header_row, column=col).value
                 if header_cell_value and seas_ref in header_cell_value:
                     ws.cell(row=seas_row, column=col).value = 1
@@ -240,7 +238,6 @@ def create_input_template(
         buffer.seek(0)  # Reset buffer pointer to the beginning
         wb.close()
 
-        print(f"Template created successfully: {output_path}")
         return buffer
 
     except FileNotFoundError:
@@ -446,10 +443,12 @@ def spreadsheet_to_df(input_file_path):
 
     # Read timestep from cell H 50
     # timestep = sheet.cell(row=50, column=8).value
-    row_11_numbers = [cell.value for cell in sheet[11]]  # Row indexing in openpyxl starts from 1
+    row_11_numbers = [
+        cell.value for cell in sheet[11]
+    ]  # Row indexing in openpyxl starts from 1
     my_series = pd.Series(row_11_numbers)
     counts = my_series.value_counts(dropna=True)
-    prd = counts.max() ### check this
+    prd = counts.max()  ### check this
     if prd == 4:
         timestep = "Quarterly"
     elif prd == 12:
@@ -509,7 +508,9 @@ def export_to_excel(
         # metadata.to_excel(writer, sheet_name=f'Base year', index=False)
 
         # Write each dataframe to a different worksheet.
-        coeff_df[~coeff_df.index.str.contains("t-val")].to_excel(writer, sheet_name=f"{workbook_test_name} Coeffs", index=True)
+        coeff_df[~coeff_df.index.str.contains("t-val")].to_excel(
+            writer, sheet_name=f"{workbook_test_name} Coeffs", index=True
+        )
         summary_tables = pd.DataFrame()
         for table in summary_df.tables:
             summary_tables = pd.concat([summary_tables, pd.DataFrame(table)])
@@ -533,19 +534,38 @@ def export_to_excel(
         for i in range(1, 4):  # Assuming 3 columns of Y-values
             chart.add_series(
                 {
-                    "name": [f"{workbook_test_name} Rsdl", 0, i],  # Column header as series name
-                    "categories": [f"{workbook_test_name} Rsdl", 1, 0, len(residuals_df), 0],  # X values (Column A)
-                    "values": [f"{workbook_test_name} Rsdl", 1, i, len(residuals_df), i],  # Y values (Columns B, C, D)
+                    "name": [
+                        f"{workbook_test_name} Rsdl",
+                        0,
+                        i,
+                    ],  # Column header as series name
+                    "categories": [
+                        f"{workbook_test_name} Rsdl",
+                        1,
+                        0,
+                        len(residuals_df),
+                        0,
+                    ],  # X values (Column A)
+                    "values": [
+                        f"{workbook_test_name} Rsdl",
+                        1,
+                        i,
+                        len(residuals_df),
+                        i,
+                    ],  # Y values (Columns B, C, D)
                     "marker": {"type": "circle", "size": 5},
                 }
             )
 
         # Set chart title and labels
         chart.set_title({"name": "Residuals Scatter Plot"})
-        chart.set_x_axis({"name": "Time",
-                          # "label_position": "low",  # Set labels to appear low on the axis
-                          # "visible": True,  # Ensure the axis is visible
-                          })  # X-axis label
+        chart.set_x_axis(
+            {
+                "name": "Time",
+                # "label_position": "low",  # Set labels to appear low on the axis
+                # "visible": True,  # Ensure the axis is visible
+            }
+        )  # X-axis label
         chart.set_y_axis({"name": "Residuals"})  # Y-axis label
 
         # Insert the chart into the worksheet
@@ -634,16 +654,14 @@ def reformat_excel(buffer, test_name):
         for cell in row:
             cell.number_format = "0.000"  # 3 decimal places
 
-
     ws_coeff = wb[f"{workbook_test_name} Coeffs"]
     adjust_column_width(ws_coeff)
     # Format numbers to 3 decimal places in Column B (or any other numerical columns)
     for row in ws_coeff.iter_rows(
-            min_row=2, min_col=2, max_col=2
+        min_row=2, min_col=2, max_col=2
     ):  # Adjust column range for other numerical columns
         for cell in row:
             cell.number_format = "0.000"  # 3 decimal places
-
 
     # Save the modified workbook to a new buffer
     new_buffer = io.BytesIO()
@@ -654,6 +672,7 @@ def reformat_excel(buffer, test_name):
     wb.close()
 
     return new_buffer
+
 
 def shorten_test_name(test_name):
     # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
@@ -683,4 +702,6 @@ def adjust_column_width(worksheet):
                 pass
 
         # Set the column width (adding a little extra for padding)
-        worksheet.column_dimensions[column].width = max_length + 2  # Adding some padding
+        worksheet.column_dimensions[column].width = (
+            max_length + 2
+        )  # Adding some padding

@@ -17,10 +17,9 @@ Modules:
 
 """
 
-from pathlib import Path
+from calendar import month_abbr
 import streamlit as st
 from apppages.utils.excel import create_input_template  # pylint: disable=import-error
-from calendar import month_abbr
 
 
 def delete_x_y_variable(var_type, var_name):
@@ -64,7 +63,7 @@ def main():
     y_var_name = st.text_input("Dependent Variable Name", key="y_name")
     y_var_type = st.selectbox(
         "Dependent Variable Type",
-        ["abs", "pct_val_or_dummy"],
+        ["value", "dummy"],
         key="y_type",
     )
     if st.button("Add Dependent Variable"):
@@ -95,7 +94,7 @@ def main():
     x_var_name = st.text_input("Independent Variable Name", key="x_name")
     x_var_type = st.selectbox(
         "Independent Variable Type",
-        ["abs", "pct_val_or_dummy"],
+        ["value", "dummy"],
         key="x_type",
     )
     if st.button("Add Independent Variable"):
@@ -147,10 +146,7 @@ def main():
             "For yearly timestep, start and end timesteps are automatically set to 1."
         )
 
-    # Collect output file path and name
-    output_folder_path = st.text_input(
-        "Enter the folder path where the output file will be saved (without quotes):"
-    )
+    # Collect output file name
     file_name = st.text_input(
         "Enter the file name (without quotes):", value=f"{project} Regression Inputs"
     )
@@ -159,14 +155,24 @@ def main():
     # seas_bool_default = timestep == "Monthly" or timestep == "Quarterly"
     # seas_bool = st.checkbox("Add seasonality variables?",value=seas_bool_default)
     prd = st.session_state.prd_dict[timestep]
-    if st.button(f'Generate seasonality variables for all {timestep[:-2].lower()}s'):
+    if st.button(
+        f"Generate seasonality variables for all "
+        f"{timestep.replace('ly','').lower() if timestep else 'timestep'}s"
+    ):
         if timestep == "Quarterly":
             for i in range(prd):
-                st.session_state.x_vars["Q" + str(i + 1) + " Seasonality"] = "pct_val_or_dummy"
+                st.session_state.x_vars["Q" + str(i + 1) + " Seasonality"] = "dummy"
+            st.rerun()
         if timestep == "Monthly":
-            for i in range(1,prd+1):
-                st.session_state.x_vars[month_abbr[i] + " Seasonality"] = "pct_val_or_dummy"
-        st.warning(f'Please remove the reference {timestep[:-2].lower()} from the seasonality variables list above', icon="⚠️")
+            for i in range(1, prd + 1):
+                st.session_state.x_vars[month_abbr[i] + " Seasonality"] = "dummy"
+            st.rerun()
+        st.warning(
+            f"Please remove the reference "
+            f"{timestep.replace('ly','').lower() if timestep else 'timestep'}"
+            f" from the seasonality variables list above",
+            icon="⚠️",
+        )
 
     # Button to generate Excel template
     if st.button("Generate Excel Template"):
@@ -179,16 +185,6 @@ def main():
             "End Timestep": end_timestep,
         }
 
-        # try:
-        #     if not output_folder_path:
-        #         raise ValueError("Output folder path cannot be empty.")
-
-        #     # Validate if the output folder exists
-        #     output_folder = Path(output_folder_path)
-        #     if not output_folder.exists():
-        #         raise FileNotFoundError(
-        #             f"The folder path '{output_folder_path}' does not exist."
-        #         )
         try:
             input_template = create_input_template(
                 name_variables,
@@ -196,21 +192,15 @@ def main():
                 st.session_state.x_vars,
                 timeline_inputs,
                 file_name,
-                output_folder_path,
             )
             st.success("Excel template generated successfully!")
-            # inputs_file_path = output_folder / f"{file_name}.xlsx"
-            # st.session_state.inputs_file_path = inputs_file_path
 
-            # Create a download button for the user to download the Excel file
             st.download_button(
                 label="Download Excel file",
                 data=input_template,
                 file_name=f"{file_name}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-
-
 
         except FileNotFoundError as fnf_error:
             st.error(f"File not found error: {fnf_error}")
@@ -223,9 +213,7 @@ def main():
                 f"Permission error: {perm_error}. "
                 "Check if you have the right permissions for the output directory."
             )
-    if st.button("Clear cache"):
-        for key in st.session_state.keys():
-            del st.session_state[key]
+
     # Button to switch page to next step
     if st.button("Next Page"):
         st.switch_page("apppages/read_inputs.py")
