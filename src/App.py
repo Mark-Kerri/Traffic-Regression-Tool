@@ -39,8 +39,14 @@ import streamlit as st
 def initialise_session_state():
     """Initialise session state variables for managing data and app configurations."""
     default_states = {
-        "y_vars": {},
-        "x_vars": {},
+        "y_vars": {
+            "Y1 (Default)": "value",
+            "Y2 (Default)": "dummy",
+        },
+        "x_vars": {
+            "X1 (Default)": "value",
+            "X2 (Default)": "dummy",
+        },
         "inputs_file_path": None,
         "slider_value_start": 0,
         "slider_value_end": -1,

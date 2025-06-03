@@ -17,9 +17,9 @@ Modules:
 
 """
 
-from calendar import month_abbr
+from calendar import month_abbr, month_name
 import streamlit as st
-from apppages.utils.excel import create_input_template  # pylint: disable=import-error
+from apppages.utils.excel import create_input_template
 
 
 def delete_x_y_variable(var_type, var_name):
@@ -49,144 +49,258 @@ def main():
     st.markdown(
         "Provide project and data information to create your Excel inputs template."
     )
+    st.info(
+        "**Note:** You can add/edit variables directly in the downloaded Excel template. "
+        "However, defining the timeline (start/end dates, timestep) is best done using this tool"
+        " before generating the template."
+    )
     st.sidebar.info(
         "This page takes inputs from the user to generate an empty Excel Template file"
     )
 
-    # Collect project information
+    # --- Project Information ---
     st.header("Project Information")
-    client = st.text_input("Client Name")
-    project = st.text_input("Project Name")
+    client = st.text_input("Client Name", key="client_name_input")
+    project = st.text_input("Project Name", key="project_name_input")
+    file_name = st.text_input(
+        "Enter the file name for the template (without quotes):",
+        value=f"{project} Regression Inputs" if project else "Regression Inputs",
+        key="file_name_input",
+    )
+    st.markdown(
+        "> _Tip: If you prefer to add most variables directly in Excel, you can "
+        "generate the template with the default variables and edit them there. "
+        "Defining the timeline here is still recommended._"
+    )
 
-    # Collect dependent variables (Y variables)
+    # --- Dependent Variables (Y variables) ---
     st.header("Dependent Variables")
-    y_var_name = st.text_input("Dependent Variable Name", key="y_name")
+    y_var_name = st.text_input("Dependent Variable Name", key="y_name_input")
     y_var_type = st.selectbox(
         "Dependent Variable Type",
         ["value", "dummy"],
-        key="y_type",
+        key="y_type_select",
     )
-    if st.button("Add Dependent Variable"):
-        if y_var_name and y_var_name not in st.session_state.y_vars:
-            st.session_state.y_vars[y_var_name] = y_var_type
-            st.success(f"Added dependent variable: {y_var_name}")
-        elif y_var_name in st.session_state.y_vars:
-            st.warning(f"Variable {y_var_name} already exists.")
-        else:
-            st.warning("Please enter a variable name.")
 
-    # Display current dependent variables with delete buttons
+    col_add_y, col_clear_y = st.columns([1, 1])
+    with col_add_y:
+        if st.button("Add Dependent Variable", use_container_width=True):
+            if y_var_name and y_var_name not in st.session_state.y_vars:
+                st.session_state.y_vars[y_var_name] = y_var_type
+                st.success(f"Added dependent variable: {y_var_name}")
+            elif y_var_name in st.session_state.y_vars:
+                st.warning(f"Variable {y_var_name} already exists.")
+            else:
+                st.warning("Please enter a variable name.")
+    with col_clear_y:
+        if st.button("Clear All Dependent Variables", use_container_width=True):
+            st.session_state.y_vars = {}
+
+    # Display current dependent variables
     if st.session_state.y_vars:
         st.write("Current Dependent Variables:")
-        for var_name, var_type in st.session_state.y_vars.items():
-            col1, col2, col3 = st.columns([3, 1, 1])
+        for var_name_disp, var_type_disp in st.session_state.y_vars.items():
+            col1, col2, col3 = st.columns([3, 2, 1])
             with col1:
-                st.write(var_name)
+                st.write(var_name_disp)
             with col2:
-                st.write(var_type)
+                st.write(var_type_disp)
             with col3:
-                if st.button("Delete", key=f"del_y_{var_name}"):
-                    delete_x_y_variable("y", var_name)
+                if st.button(
+                    "Delete",
+                    key=f"del_y_{var_name_disp.replace(' ', '_')}",
+                    use_container_width=True,
+                ):
+                    delete_x_y_variable("y", var_name_disp)
                     st.rerun()
 
-    # Collect independent variables (X variables)
+    # --- Independent Variables (X variables) ---
     st.header("Independent Variables")
-    x_var_name = st.text_input("Independent Variable Name", key="x_name")
+    x_var_name = st.text_input("Independent Variable Name", key="x_name_input")
     x_var_type = st.selectbox(
         "Independent Variable Type",
         ["value", "dummy"],
-        key="x_type",
+        key="x_type_select",
     )
-    if st.button("Add Independent Variable"):
-        if x_var_name and x_var_name not in st.session_state.x_vars:
-            st.session_state.x_vars[x_var_name] = x_var_type
-            st.success(f"Added independent variable: {x_var_name}")
-        elif x_var_name in st.session_state.x_vars:
-            st.warning(f"Variable {x_var_name} already exists.")
-        else:
-            st.warning("Please enter a variable name.")
 
-    # Display current independent variables with delete buttons
+    col_add_x, col_clear_x = st.columns([1, 1])
+    with col_add_x:
+        if st.button("Add Independent Variable", use_container_width=True):
+            if x_var_name and x_var_name not in st.session_state.x_vars:
+                st.session_state.x_vars[x_var_name] = x_var_type
+                st.success(f"Added independent variable: {x_var_name}")
+            elif x_var_name in st.session_state.x_vars:
+                st.warning(f"Variable {x_var_name} already exists.")
+            else:
+                st.warning("Please enter a variable name.")
+    with col_clear_x:
+        if st.button("Clear All Independent Variables", use_container_width=True):
+            st.session_state.x_vars = {}
+
+    # Display current independent variables
     if st.session_state.x_vars:
         st.write("Current Independent Variables:")
-        for var_name, var_type in st.session_state.x_vars.items():
-            col1, col2, col3 = st.columns([3, 1, 1])
+        for var_name_disp, var_type_disp in st.session_state.x_vars.items():
+            col1, col2, col3 = st.columns([3, 2, 1])
             with col1:
-                st.write(var_name)
+                st.write(var_name_disp)
             with col2:
-                st.write(var_type)
+                st.write(var_type_disp)
             with col3:
-                if st.button("Delete", key=f"del_x_{var_name}"):
-                    delete_x_y_variable("x", var_name)
+                if st.button(
+                    "Delete",
+                    key=f"del_x_{var_name_disp.replace(' ', '_')}",
+                    use_container_width=True,
+                ):
+                    delete_x_y_variable("x", var_name_disp)
                     st.rerun()
 
-    # Collect timeline inputs
+    # --- Timeline Information ---
     st.header("Timeline Information")
-    timestep = st.selectbox("Timestep", ["Monthly", "Quarterly", "Yearly"])
-    start_year = st.number_input(
-        "Start Year", min_value=1900, max_value=2100, value=2012
+    timestep = st.selectbox(
+        "Timestep", ["Monthly", "Quarterly", "Yearly"], key="timestep_select"
     )
-    end_year = st.number_input("End Year", min_value=1900, max_value=2100, value=2023)
 
-    # Adjust start_timestep and end_timestep based on timestep
+    month_options = list(month_name)[1:]  # Full names: January, February...
+
+    col_start_year, col_start_period = st.columns(2)
+    col_end_year, col_end_period = st.columns(2)
+
+    with col_start_year:
+        start_year = st.number_input(
+            "Start Year",
+            min_value=1900,
+            max_value=2100,
+            value=2010,
+            key="start_year_input",
+        )
+    with col_end_year:
+        end_year = st.number_input(
+            "End Year", min_value=1900, max_value=2100, value=2025, key="end_year_input"
+        )
+
+    start_timestep_val = 1
+    end_timestep_val = 1
+
     if timestep == "Monthly":
-        start_timestep = st.number_input(
-            "Start Month", min_value=1, max_value=12, value=1
-        )
-        end_timestep = st.number_input("End Month", min_value=1, max_value=12, value=12)
+        with col_start_period:
+            selected_start_month_name = st.selectbox(
+                "Start Month",
+                options=month_options,
+                index=0,
+                key="start_month_select",  # Default to January
+            )
+            start_timestep_val = month_options.index(selected_start_month_name) + 1
+        with col_end_period:
+            selected_end_month_name = st.selectbox(
+                "End Month",
+                options=month_options,
+                index=11,
+                key="end_month_select",  # Default to December
+            )
+            end_timestep_val = month_options.index(selected_end_month_name) + 1
     elif timestep == "Quarterly":
-        start_timestep = st.number_input(
-            "Start Quarter", min_value=1, max_value=4, value=1
-        )
-        end_timestep = st.number_input("End Quarter", min_value=1, max_value=4, value=4)
+        with col_start_period:
+            start_timestep_val = st.number_input(
+                "Start Quarter", min_value=1, max_value=4, value=1, key="start_q_input"
+            )
+        with col_end_period:
+            end_timestep_val = st.number_input(
+                "End Quarter", min_value=1, max_value=4, value=4, key="end_q_input"
+            )
     else:  # Yearly
-        start_timestep = 1
-        end_timestep = 1
-        st.write(
-            "For yearly timestep, start and end timesteps are automatically set to 1."
-        )
+        with col_start_period:
+            st.write("")  # left blank
+        with col_end_period:
+            st.write("")  # left blank
+        # start_timestep_val and end_timestep_val remain 1
 
-    # Collect output file name
-    file_name = st.text_input(
-        "Enter the file name (without quotes):", value=f"{project} Regression Inputs"
+    # --- Seasonality Generation Refined ---
+    st.subheader("Seasonality Variables (Optional)")
+    generate_seasonality_flag = st.checkbox(
+        "Generate seasonality dummy variables?", key="gen_seas_flag"
     )
+    reference_period_val = None
 
-    # define seasonality here
-    # seas_bool_default = timestep == "Monthly" or timestep == "Quarterly"
-    # seas_bool = st.checkbox("Add seasonality variables?",value=seas_bool_default)
-    prd = st.session_state.prd_dict[timestep]
-    if st.button(
-        f"Generate seasonality variables for all "
-        f"{timestep.replace('ly','').lower() if timestep else 'timestep'}s"
-    ):
-        if timestep == "Quarterly":
-            for i in range(prd):
-                st.session_state.x_vars["Q" + str(i + 1) + " Seasonality"] = "dummy"
-            st.rerun()
+    if generate_seasonality_flag:
         if timestep == "Monthly":
-            for i in range(1, prd + 1):
-                st.session_state.x_vars[month_abbr[i] + " Seasonality"] = "dummy"
-            st.rerun()
-        st.warning(
-            f"Please remove the reference "
-            f"{timestep.replace('ly','').lower() if timestep else 'timestep'}"
-            f" from the seasonality variables list above",
-            icon="⚠️",
-        )
+            monthly_ref_options = list(month_abbr)[1:]
+            reference_period_val = st.selectbox(
+                "Select reference month to exclude:",
+                options=monthly_ref_options,
+                index=len(monthly_ref_options) - 1,  # Default to last month (e.g., Dec)
+                key="ref_month_select",
+            )
+        elif timestep == "Quarterly":
+            quarterly_ref_options = [f"Q{i+1}" for i in range(4)]
+            reference_period_val = st.selectbox(
+                "Select reference quarter to exclude:",
+                options=quarterly_ref_options,
+                index=len(quarterly_ref_options) - 1,  # Default to Q4
+                key="ref_q_select",
+            )
+        else:  # Yearly
+            st.write("Seasonality is not applicable for Yearly timestep.")
 
-    # Button to generate Excel template
-    if st.button("Generate Excel Template"):
+        if timestep in ["Monthly", "Quarterly"]:
+            col_gen_seas, col_clear_seas = st.columns(2)
+            with col_gen_seas:
+                if st.button("Generate Seasonality Dummies", use_container_width=True):
+                    current_x_vars = st.session_state.x_vars.copy()
+                    if timestep == "Monthly":
+                        prd = 12
+                        for i in range(1, prd + 1):
+                            month_short_name = month_abbr[i]
+                            if month_short_name != reference_period_val:
+                                current_x_vars[f"{month_short_name} Seasonality"] = (
+                                    "dummy"
+                                )
+                    elif timestep == "Quarterly":
+                        prd = 4
+                        for i in range(prd):
+                            q_name = f"Q{i+1}"
+                            if q_name != reference_period_val:
+                                current_x_vars[f"{q_name} Seasonality"] = "dummy"
+                    st.session_state.x_vars = current_x_vars
+                    st.success(
+                        "Seasonality dummy variables generated (excluding reference)."
+                    )
+                    st.rerun()
+            with col_clear_seas:
+                if st.button("Clear Seasonality Dummies", use_container_width=True):
+                    # More robustly find and remove seasonality variables
+                    vars_to_remove = [
+                        var_name
+                        for var_name in st.session_state.x_vars
+                        if "Seasonality" in var_name
+                        and (
+                            var_name.startswith("Q")
+                            or any(m in var_name for m in list(month_abbr))
+                        )
+                    ]
+                    for var_name_rem in vars_to_remove:
+                        if var_name_rem in st.session_state.x_vars:
+                            del st.session_state.x_vars[var_name_rem]
+                    if vars_to_remove:
+                        st.success("Seasonality dummy variables cleared.")
+                        st.rerun()
+                    else:
+                        st.info("No seasonality dummy variables found to clear.")
+
+    # --- Button to generate Excel template ---
+    st.divider()
+    if st.button("Generate Excel Template", type="primary", use_container_width=True):
         name_variables = {"Client": client, "Project": project}
         timeline_inputs = {
             "Timestep": timestep,
             "Start Year": start_year,
-            "Start Timestep": start_timestep,
+            "Start Timestep": start_timestep_val,
             "End Year": end_year,
-            "End Timestep": end_timestep,
+            "End Timestep": end_timestep_val,
         }
 
         try:
-            input_template = create_input_template(
+            input_template_buffer = create_input_template(
                 name_variables,
                 st.session_state.y_vars,
                 st.session_state.x_vars,
@@ -197,25 +311,19 @@ def main():
 
             st.download_button(
                 label="Download Excel file",
-                data=input_template,
+                data=input_template_buffer,
                 file_name=f"{file_name}.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                key="download_template_btn",
             )
 
         except FileNotFoundError as fnf_error:
-            st.error(f"File not found error: {fnf_error}")
-
+            st.error(f"Template file not found error: {fnf_error}")
         except ValueError as val_error:
             st.error(f"Value error: {val_error}")
 
-        except PermissionError as perm_error:
-            st.error(
-                f"Permission error: {perm_error}. "
-                "Check if you have the right permissions for the output directory."
-            )
-
-    # Button to switch page to next step
-    if st.button("Next Page"):
+    # --- Button to switch page to next step ---
+    if st.button("Next Page", use_container_width=True):
         st.switch_page("apppages/read_inputs.py")
 
 
