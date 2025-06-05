@@ -50,6 +50,7 @@ def initialise_session_state():
         "inputs_file_path": None,
         "slider_value_start": 0,
         "slider_value_end": -1,
+        "index_slider_value_point": 0,
         "base_slider_value_start": 0,
         "base_slider_value_end": -1,
         "export_file_path": "outputs/interim_df_output.csv",
@@ -64,6 +65,8 @@ def initialise_session_state():
         "prd": None,
         "y_sel": [],  # General Y selection
         "x_sel": [],  # General X selection
+        "y_sel_d": [],  # Y selection for data exploration
+        "x_sel_d": [],  # X selection for data exploration
         "y_sel_l": [],  # Log-transformed Y selection (likely for regression target)
         "x_sel_l": [],  # Log-transformed X selection (likely for regression predictors)
         "y_sel_g": [],  # Growth-transformed Y selection (if needed)
