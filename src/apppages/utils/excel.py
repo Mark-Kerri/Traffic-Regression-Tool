@@ -59,9 +59,9 @@ from openpyxl import load_workbook
 # Constants
 TEMPLATE_PATH = "data/utils/excel_template_v0.01.xlsx"
 OUTPUT_DIR = "data/reg_input"
-HEADER_STYLE_CELL = "D13"
-VALUE_STYLE_CELL = "D14"
-YEAR_STYLE_CELL = "D12"
+HEADER_STYLE_CELL = "D33"
+VALUE_STYLE_CELL = "D34"
+YEAR_STYLE_CELL = "D32"
 DATA_NAMES_START_COL = 4  # Column D is the first column for variable names
 DATA_TYPES_START_COL = 5  # Column E is the first column for variable types
 DATA_VALUES_START_COL = 7  # Column G is the first time series column
