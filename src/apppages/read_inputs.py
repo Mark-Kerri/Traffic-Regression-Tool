@@ -36,9 +36,7 @@ def main():
             st.session_state.df,
             st.session_state.df_index,
             st.session_state.var_dict,
-            st.session_state.timestep,
         ) = spreadsheet_to_df(input_file_path)
-        st.session_state.prd = st.session_state.prd_dict[st.session_state.timestep]
         st.session_state.inputs_file_path = input_file_path
 
     if st.session_state.df is not None:

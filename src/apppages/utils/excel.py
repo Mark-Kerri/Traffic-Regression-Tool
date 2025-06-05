@@ -51,7 +51,6 @@ import io
 from copy import copy
 from calendar import month_abbr
 
-# from datetime import datetime
 import openpyxl
 import pandas as pd
 from openpyxl.styles import Font, PatternFill
@@ -62,6 +61,27 @@ TEMPLATE_PATH = "data/utils/excel_template_v0.01.xlsx"
 OUTPUT_DIR = "data/reg_input"
 HEADER_STYLE_CELL = "D13"
 VALUE_STYLE_CELL = "D14"
+YEAR_STYLE_CELL = "D12"
+DATA_NAMES_START_COL = 4  # Column D is the first column for variable names
+DATA_TYPES_START_COL = 5  # Column E is the first column for variable types
+DATA_VALUES_START_COL = 7  # Column G is the first time series column
+DEP_VAR_START_ROW = 33  # Starting row for dependent variables in the template
+
+
+def update_basic_info(ws, client_name, project_name, file_name):
+    """
+    Update basic project information in the worksheet.
+
+    Parameters:
+        ws (openpyxl.worksheet.worksheet.Worksheet): The worksheet to update.
+        client_name (str): Name of the client.
+        project_name (str): Name of the project.
+        file_name (str): The name of the output file.
+    """
+    ws["B2"] = client_name
+    ws["B3"] = project_name
+    ws["B4"] = file_name
+    ws["B6"] = "Regression Inputs"
 
 
 def copy_cell_style(source_cell, target_cell):
@@ -128,6 +148,7 @@ def generate_timeline(timeline_inputs):
     elif timestep == "Yearly" and (start_step != 1 or end_step != 1):
         raise ValueError("For Yearly timestep, Start and End Timestep must be 1")
 
+    # Generate the timeline
     list_1, list_2, list_3 = [], [], []
     steps_per_year = (
         12 if timestep == "Monthly" else 4 if timestep == "Quarterly" else 1
@@ -155,8 +176,84 @@ def generate_timeline(timeline_inputs):
         "years": list_1,
         "steps": list_2,
         "combined": list_3,
-    }  # ,"seasonality": list_4}
+    }
     return timelines
+
+
+def insert_columns_with_style(ws, start_column, num_columns):
+    """
+    Insert columns into the worksheet and applies the style from an existing column.
+
+    Parameters:
+        ws (openpyxl.worksheet.worksheet.Worksheet): The worksheet to modify.
+        start_column (int): The column index where insertion starts.
+        num_columns (int): Number of columns to insert.
+    """
+    max_row = ws.max_row
+    ws.insert_cols(start_column, num_columns)
+
+    for row in range(1, max_row + 1):
+        source_cell = ws.cell(row=row, column=start_column + num_columns)
+        for col in range(start_column, start_column + num_columns):
+            target_cell = ws.cell(row=row, column=col)
+            copy_cell_style(source_cell, target_cell)
+
+
+def add_variables_with_timeline(ws, variables, header_text, start_row, timelines):
+    """
+    Add variables and their corresponding timeline to the worksheet.
+
+    Parameters:
+        ws (openpyxl.worksheet.worksheet.Worksheet): The worksheet to update.
+        variables (dict): A dictionary of variables and their types.
+        header_text (str): The header text to display.
+        start_row (int): The starting row for adding the variables.
+        timelines (dict): The generated timeline data.
+
+    Returns:
+        int: The last row index after adding the variables.
+    """
+    ws.cell(row=start_row, column=DATA_NAMES_START_COL).value = header_text
+    ws.cell(row=start_row, column=DATA_TYPES_START_COL).value = "Value Type"
+
+    header_style = ws[HEADER_STYLE_CELL]
+    value_style = ws[VALUE_STYLE_CELL]
+    year_step_style = ws[YEAR_STYLE_CELL]
+
+    copy_cell_style(header_style, ws.cell(row=start_row, column=DATA_NAMES_START_COL))
+    copy_cell_style(header_style, ws.cell(row=start_row, column=DATA_TYPES_START_COL))
+
+    for col, value in enumerate(timelines["years"], start=DATA_VALUES_START_COL):
+        cell = ws.cell(row=start_row - 2, column=col)
+        cell.value = value
+        copy_cell_style(year_step_style, cell)
+
+    for col, value in enumerate(timelines["steps"], start=DATA_VALUES_START_COL):
+        cell = ws.cell(row=start_row - 1, column=col)
+        cell.value = value
+        copy_cell_style(year_step_style, cell)
+
+    for col, value in enumerate(timelines["combined"], start=DATA_VALUES_START_COL):
+        cell = ws.cell(row=start_row, column=col)
+        cell.value = value
+        copy_cell_style(header_style, cell)
+
+    row = start_row
+    for key, item in variables.items():
+        row += 1
+        ws.cell(row=row, column=DATA_NAMES_START_COL).value = key
+        ws.cell(row=row, column=DATA_TYPES_START_COL).value = item
+
+        copy_cell_style(value_style, ws.cell(row=row, column=DATA_NAMES_START_COL))
+        copy_cell_style(value_style, ws.cell(row=row, column=DATA_TYPES_START_COL))
+
+        for col in range(
+            DATA_VALUES_START_COL, DATA_VALUES_START_COL + len(timelines["combined"])
+        ):
+            cell = ws.cell(row=row, column=col)
+            copy_cell_style(value_style, cell)
+
+    return row
 
 
 def create_input_template(
@@ -185,7 +282,7 @@ def create_input_template(
     """
     try:
         wb = openpyxl.load_workbook(TEMPLATE_PATH)
-        ws = wb.active
+        ws = wb.worksheets[0]
 
         client_name = name_variables["Client"]
         project_name = name_variables["Project"]
@@ -193,37 +290,28 @@ def create_input_template(
 
         timelines = generate_timeline(timeline_inputs)
         num_columns = len(timelines["combined"])
-        insert_columns_with_style(ws, 7, num_columns)
+        insert_columns_with_style(ws, DATA_VALUES_START_COL, num_columns)
 
         last_row = add_variables_with_timeline(
-            ws, y_variables, "Dependent Variables", 13, timelines
+            ws, y_variables, "Dependent Variables", DEP_VAR_START_ROW, timelines
         )
         add_variables_with_timeline(
             ws, x_variables, "Independent Variables", last_row + 5, timelines
         )
-        ws["H50"] = timeline_inputs["Timestep"]
 
-        # fill in seasonality timelines here:
-        # find row number where "Seasonality" is mentioned on col D
-        # then iterate across columns and fill with 1s the rows where
-        # - "Q1 " or "Jan" (First three characters?)
-        # match with the variable name
-        # workbook = openpyxl.load_workbook(input_file_path, data_only=True)
-        # sheet = workbook.active
-        var_col = 4  # start from Column D for variable names
+        var_col = DATA_NAMES_START_COL
         seas_var_dict = {}
         header_row = None
         for row in range(1, ws.max_row + 1):
             cell_value = ws.cell(row=row, column=var_col).value
             if cell_value and "Dependent Variable" in cell_value:
                 header_row = row
-                # print(header_row)
             if cell_value and "Seasonality" in cell_value:
                 seas_row_num = row
                 seas_var_ref = cell_value.split(" ")[0]
                 seas_var_dict[seas_row_num] = seas_var_ref
-                # print(seas_var_dict)
 
+        # Add seasonality indicators with the values based on the header row and column heading
         for seas_row, seas_ref in seas_var_dict.items():
             for col in range(var_col + 3, var_col + 3 + len(timelines["combined"])):
                 header_cell_value = ws.cell(row=header_row, column=col).value
@@ -231,7 +319,7 @@ def create_input_template(
                     ws.cell(row=seas_row, column=col).value = 1
                 elif header_cell_value and seas_ref not in header_cell_value:
                     ws.cell(row=seas_row, column=col).value = 0
-            # print(ws.cell(row=seas_row_num, column=col).value)
+
         # Save the workbook to an in-memory buffer
         buffer = io.BytesIO()
         wb.save(buffer)
@@ -250,96 +338,6 @@ def create_input_template(
         print(f"Invalid file format encountered: {ife}")
     except OSError as oe:
         print(f"File system error when saving the file: {oe}")
-
-
-def insert_columns_with_style(ws, start_column, num_columns):
-    """
-    Insert columns into the worksheet and applies the style from an existing column.
-
-    Parameters:
-        ws (openpyxl.worksheet.worksheet.Worksheet): The worksheet to modify.
-        start_column (int): The column index where insertion starts.
-        num_columns (int): Number of columns to insert.
-    """
-    max_row = ws.max_row
-    ws.insert_cols(start_column, num_columns)
-
-    for row in range(1, max_row + 1):
-        source_cell = ws.cell(row=row, column=start_column + num_columns)
-        for col in range(start_column, start_column + num_columns):
-            target_cell = ws.cell(row=row, column=col)
-            copy_cell_style(source_cell, target_cell)
-
-
-def update_basic_info(ws, client_name, project_name, file_name):
-    """
-    Update basic project information in the worksheet.
-
-    Parameters:
-        ws (openpyxl.worksheet.worksheet.Worksheet): The worksheet to update.
-        client_name (str): Name of the client.
-        project_name (str): Name of the project.
-        file_name (str): The name of the output file.
-    """
-    ws["B2"] = client_name
-    ws["B3"] = project_name
-    ws["B4"] = file_name
-    ws["B6"] = "Regression Inputs"
-
-
-def add_variables_with_timeline(ws, variables, header_text, start_row, timelines):
-    """
-    Add variables and their corresponding timeline to the worksheet.
-
-    Parameters:
-        ws (openpyxl.worksheet.worksheet.Worksheet): The worksheet to update.
-        variables (dict): A dictionary of variables and their types.
-        header_text (str): The header text to display.
-        start_row (int): The starting row for adding the variables.
-        timelines (dict): The generated timeline data.
-
-    Returns:
-        int: The last row index after adding the variables.
-    """
-    ws[f"D{start_row}"] = header_text
-    ws[f"E{start_row}"] = "abs/pct"
-
-    header_style = ws[HEADER_STYLE_CELL]
-    value_style = ws[VALUE_STYLE_CELL]
-    year_step_style = ws["D12"]
-
-    copy_cell_style(header_style, ws[f"D{start_row}"])
-    copy_cell_style(header_style, ws[f"E{start_row}"])
-
-    for col, value in enumerate(timelines["years"], start=7):
-        cell = ws.cell(row=start_row - 2, column=col)
-        cell.value = value
-        copy_cell_style(year_step_style, cell)
-
-    for col, value in enumerate(timelines["steps"], start=7):
-        cell = ws.cell(row=start_row - 1, column=col)
-        cell.value = value
-        copy_cell_style(year_step_style, cell)
-
-    for col, value in enumerate(timelines["combined"], start=7):
-        cell = ws.cell(row=start_row, column=col)
-        cell.value = value
-        copy_cell_style(header_style, cell)
-
-    row = start_row
-    for key, item in variables.items():
-        row += 1
-        ws[f"D{row}"] = key
-        ws[f"E{row}"] = item
-
-        copy_cell_style(value_style, ws[f"D{row}"])
-        copy_cell_style(value_style, ws[f"E{row}"])
-
-        for col in range(7, 7 + len(timelines["combined"])):
-            cell = ws.cell(row=row, column=col)
-            copy_cell_style(value_style, cell)
-
-    return row
 
 
 def spreadsheet_to_df(input_file_path):
@@ -370,16 +368,18 @@ def spreadsheet_to_df(input_file_path):
             - var_dict (dict): A dictionary mapping variables to their unit type (e.g. "abs/pct").
     """
     workbook = openpyxl.load_workbook(input_file_path, data_only=True)
-    sheet = workbook.active
+    sheet = workbook.worksheets[0]
 
     # Read column names and row names so that the dataframe is filled
     df_cols = []
     dependent_flag = 1
-    col = 4  # start from Column D for variable names
+    dependent_row = 1
+    col = DATA_NAMES_START_COL
     for row in range(1, sheet.max_row + 1):
         if sheet.cell(row=row, column=col).value is not None:
             if sheet.cell(row=row, column=col).value == "Dependent Variables":
                 dependent_flag = 1
+                dependent_row = row
                 continue
             if sheet.cell(row=row, column=col).value == "Independent Variables":
                 dependent_flag = 0
@@ -398,7 +398,7 @@ def spreadsheet_to_df(input_file_path):
                 start_row = row
                 break
         cell_names = sheet[start_row]
-        for cell_obj in cell_names[6:]:
+        for cell_obj in cell_names[DATA_VALUES_START_COL - 1 :]:
             try:
                 val = float(str(cell_obj.value))
                 temp_list.append(val)
@@ -408,13 +408,8 @@ def spreadsheet_to_df(input_file_path):
 
     # Build the index of the df assuming column G is empty
     # and column G is the first time series column
-    col = 7  # Start at Col G
-    for row in range(1, sheet.max_row + 1):
-        if sheet.cell(row=row, column=col).value is not None:
-            start_row = row
-            # print(start_row)
-            break
-    idx_row = start_row + 2  # 2 rows below first non-empty cell
+    col = DATA_VALUES_START_COL  # Start at Col G
+    idx_row = dependent_row  # data index row assumed same as dependent variables row
 
     temp_list = []
     cell_names = sheet[idx_row]
@@ -430,9 +425,9 @@ def spreadsheet_to_df(input_file_path):
 
     # Read variable type/unit and build a dictionary
     var_dict = {}
-    col = 5  # Start at Column E
+    col = DATA_TYPES_START_COL  # Start at Column E
     for row in range(1, sheet.max_row + 1):
-        if sheet.cell(row=row, column=col).value == "abs/pct" or (
+        if sheet.cell(row=row, column=col).value == "Value Type" or (
             sheet.cell(row=row, column=col).value is None
         ):
             continue
@@ -441,25 +436,7 @@ def spreadsheet_to_df(input_file_path):
         ).value
     df_index = df.index
 
-    # Read timestep from cell H 50
-    # timestep = sheet.cell(row=50, column=8).value
-    row_11_numbers = [
-        cell.value for cell in sheet[11]
-    ]  # Row indexing in openpyxl starts from 1
-    my_series = pd.Series(row_11_numbers)
-    counts = my_series.value_counts(dropna=True)
-    prd = counts.max()  ### check this
-    timestep = None
-    if prd == 4:
-        timestep = "Quarterly"
-    elif prd == 12:
-        timestep = "Monthly"
-    elif prd == 1:
-        timestep = "Yearly"
-    return df, df_index, var_dict, timestep
-
-
-# def export_to_excel(coeff_df,df,summary_df,residuals_df,path):
+    return df, df_index, var_dict
 
 
 def export_to_excel(
