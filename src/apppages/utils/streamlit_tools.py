@@ -262,7 +262,7 @@ def growth_df(df):
     Returns:
     tuple: A tuple containing the growth dataframe and its index.
     """
-    prd = st.session_state.prd  # Quarterly data
+    prd = st.session_state.prd
 
     # Identify columns of each type and calculate growth rates
     for df_col in df.columns:

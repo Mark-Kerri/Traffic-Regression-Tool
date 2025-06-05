@@ -40,6 +40,19 @@ def main():
         st.session_state.inputs_file_path = input_file_path
 
     if st.session_state.df is not None:
+        st.session_state.timestep = st.selectbox(
+            "Confirm timestep type:",
+            options=st.session_state.prd_dict,
+            key="timestep_type",
+        )
+
+        if st.session_state.timestep:
+            if st.button("Confirm", use_container_width=True):
+                st.session_state.prd = st.session_state.prd_dict[
+                    st.session_state.timestep
+                ]
+
+    if st.session_state.prd is not None:
         st.header("Filter Timeline:")
         slider_range = st.select_slider(
             "Choose the range of points to be plotted",
