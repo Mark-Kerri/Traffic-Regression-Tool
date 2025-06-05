@@ -47,15 +47,13 @@ This module is designed to facilitate the creation of structured Excel templates
 for the tool, ensuring consistency and accuracy in the data analysis.
 """
 
-import os
 import io
 from copy import copy
 from calendar import month_abbr
-import xlsxwriter
+
+# from datetime import datetime
 import openpyxl
 import pandas as pd
-from datetime import datetime
-from openpyxl.chart import ScatterChart, Reference, Series
 from openpyxl.styles import Font, PatternFill
 from openpyxl import load_workbook
 
@@ -175,7 +173,7 @@ def create_input_template(
         name_variables (dict): Project and client names.
         y_variables (dict): Dependent variables and their types.
         x_variables (dict): Independent variables and their types.
-        timeline_inputs (dict): Timeline details. Saves the timestep on cell H50 (see timeline_inputs["Timestep"] )
+        timeline_inputs (dict): Timeline details. Saves the timestep on cell H50
         file_name (str): Desired name for the output file.
 
     Raises:
@@ -207,12 +205,14 @@ def create_input_template(
 
         # fill in seasonality timelines here:
         # find row number where "Seasonality" is mentioned on col D
-        # then iterate across columns and fill with 1s the rows where "Q1 " or "Jan" (First three characters?)
+        # then iterate across columns and fill with 1s the rows where
+        # - "Q1 " or "Jan" (First three characters?)
         # match with the variable name
         # workbook = openpyxl.load_workbook(input_file_path, data_only=True)
         # sheet = workbook.active
         var_col = 4  # start from Column D for variable names
         seas_var_dict = {}
+        header_row = None
         for row in range(1, ws.max_row + 1):
             cell_value = ws.cell(row=row, column=var_col).value
             if cell_value and "Dependent Variable" in cell_value:
@@ -449,6 +449,7 @@ def spreadsheet_to_df(input_file_path):
     my_series = pd.Series(row_11_numbers)
     counts = my_series.value_counts(dropna=True)
     prd = counts.max()  ### check this
+    timestep = None
     if prd == 4:
         timestep = "Quarterly"
     elif prd == 12:
@@ -468,11 +469,24 @@ def export_to_excel(
     coeff_df,
     summary_df,
     residuals_df,
-    path,
     forecast_df,
 ):
+    """
+    Exports regression results, coefficients, summaries, residuals, and forecasts
+    to an Excel file in an in-memory buffer, including scatter and line charts.
+    Args:
+        regressions_df (pd.DataFrame): DataFrame containing all regression results.
+        g_df (pd.DataFrame): DataFrame containing regression inputs.
+        test_name (str): Name of the test, used for sheet names.
+        coeff_df (pd.DataFrame): DataFrame containing coefficients.
+        summary_df (pd.DataFrame): DataFrame containing summary tables.
+        residuals_df (pd.DataFrame): DataFrame containing residuals.
+        forecast_df (pd.DataFrame): DataFrame containing forecast data.
+    Returns:
+        io.BytesIO: An in-memory buffer containing the Excel file data.
+    """
 
-    # # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
+    # avoid having too long worksheet names, which causes errors when saving workbooks (max char 31)
     # workbook_test_name = test_name
     # if len(test_name) > 20:
     #     shortened_test_name_elements = [x[:3] for x in test_name.split("-")]
@@ -480,13 +494,10 @@ def export_to_excel(
     #     if len(workbook_test_name) > 20:
     #         workbook_test_name = workbook_test_name[:15] + "+"
     workbook_test_name = shorten_test_name(test_name)
-    current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
+    # current_timestamp = datetime.now().strftime("%Y-%m-%d-%H%M")
     cols = [x for x in forecast_df.columns if x.startswith("y:") or x == "Forecast y"]
     forecast_df = forecast_df[cols]
     forecast_df_cols = len(forecast_df.columns)
-    full_output_path = os.path.join(
-        path, f"{current_timestamp}_{workbook_test_name}_output.xlsx"
-    )
 
     # Create an in-memory buffer to hold the Excel file
     buffer = io.BytesIO()
@@ -494,14 +505,14 @@ def export_to_excel(
     with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
 
         # all regressions
-        regressions_df.to_excel(writer, sheet_name=f"All regressions", index=True)
-        ws_regressions = writer.sheets[f"All regressions"]
+        regressions_df.to_excel(writer, sheet_name="All regressions", index=True)
+        ws_regressions = writer.sheets["All regressions"]
         ws_regressions = ws_regressions.set_column(0, 0, 85)
         # Define styles for bold text and grey background
-        bold_font = Font(bold=True)
-        grey_fill = PatternFill(
-            start_color="C0C0C0", end_color="C0C0C0", fill_type="solid"
-        )
+        # bold_font = Font(bold=True)
+        # grey_fill = PatternFill(
+        #     start_color="C0C0C0", end_color="C0C0C0", fill_type="solid"
+        # )
 
         # add metadata
         # metadata = pd.DataFrame(data=base_year_datapoints)
@@ -622,6 +633,20 @@ def export_to_excel(
 
 
 def reformat_excel(buffer, test_name):
+    """
+    Reformats an Excel workbook contained in a buffer.
+    The function loads an Excel workbook from a buffer, finds a specific test name
+    in the 'All regressions' sheet, highlights the corresponding row, formats
+    numerical columns in both 'All regressions' and '{test_name} Coeffs' sheets
+    to 3 decimal places, adjusts column width in the '{test_name} Coeffs' sheet,
+    and saves the modified workbook to a new buffer.
+    Args:
+        buffer (io.BytesIO): An in-memory buffer containing the Excel workbook data.
+        test_name (str): The name of the test to find and highlight in the
+                         'All regressions' sheet.
+    Returns:
+        io.BytesIO: A new in-memory buffer containing the modified Excel workbook data.
+    """
     workbook_test_name = shorten_test_name(test_name)
     buffer.seek(0)  # Reset the buffer to the start before reading it
 
@@ -675,7 +700,24 @@ def reformat_excel(buffer, test_name):
 
 
 def shorten_test_name(test_name):
-    # avoid having too long worksheet names, which causes errors when saving workbooks (max chars 31)
+    """
+    Shortens a test name to be suitable for use as an Excel sheet name.
+
+    Excel sheet names have a maximum length of 31 characters. This function aims
+    to keep the name shorter, typically under 20 characters, to avoid errors
+    when saving workbooks.
+
+    If the original name is longer than 20 characters, it splits the name by '-',
+    takes the first 3 characters of each part, and joins them. If the resulting
+    name is still longer than 20 characters, it truncates it to 15 characters
+    followed by a '+'. Otherwise, it uses the original name.
+
+    Args:
+        test_name (str): The original test name.
+
+    Returns:
+        str: The shortened test name suitable for a sheet name.
+    """
     if len(test_name) > 20:
         shortened_test_name_elements = [x[:3] for x in test_name.split("-")]
         workbook_test_name = "".join(shortened_test_name_elements)
@@ -687,6 +729,11 @@ def shorten_test_name(test_name):
 
 
 def adjust_column_width(worksheet):
+    """
+    Adjusts the width of columns in a worksheet to fit the content.
+    Args:
+        worksheet: The openpyxl worksheet object.
+    """
     # Loop over all columns in the worksheet
     for col in worksheet.columns:
         max_length = 0
@@ -694,12 +741,9 @@ def adjust_column_width(worksheet):
 
         # Iterate over all cells in the column, including the header
         for cell in col:
-            try:
-                # Calculate the length of the cell's string representation
-                if cell.value:
-                    max_length = max(max_length, len(str(cell.value)))
-            except:
-                pass
+            # Calculate the length of the cell's string representation
+            if cell.value:
+                max_length = max(max_length, len(str(cell.value)))
 
         # Set the column width (adding a little extra for padding)
         worksheet.column_dimensions[column].width = (

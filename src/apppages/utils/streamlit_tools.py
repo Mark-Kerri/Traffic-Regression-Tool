@@ -8,7 +8,7 @@ within the Streamlit application, focusing on time series data.
 import numpy as np
 import pandas as pd
 import streamlit as st
-import plotly.express as px
+import plotly.express as px  # type: ignore
 
 
 def stringify(i: int = 0) -> str:
@@ -93,7 +93,7 @@ def visualise_data(df, plot_indexed=True):
     fig.update_layout(xaxis_title="Timeline", yaxis_title="Variable")
     st.plotly_chart(fig)
 
-    if plot_indexed == True:
+    if plot_indexed is True:
         # Create a line plot for the indexed data (base-100)
         df_indexed = 100 * (df / df.iloc[0, :])
         fig = px.line(
@@ -174,6 +174,17 @@ def growth_list(elements):
 
 
 def calc_elast_df(test, coeff_df, regr_tests_and_cols_dict, g_df):
+    """
+    Calculates an elasticity dataframe based on input dataframes and coefficients.
+    Args:
+        test (str): The key used to look up relevant columns in regr_tests_and_cols_dict.
+        coeff_df (pd.DataFrame): DataFrame containing coefficients, indexed by column name.
+        regr_tests_and_cols_dict (dict): Dictionary mapping test names to lists of column names.
+        g_df (pd.DataFrame): The base DataFrame containing the data to which elasticity is applied.
+    Returns:
+        pd.DataFrame: A DataFrame where each element is the corresponding element from g_df
+                      raised to the power of its coefficient from coeff_df.
+    """
     reg_cols = regr_tests_and_cols_dict[test]
 
     elast_df = g_df[reg_cols] ** coeff_df[reg_cols].iloc[0][reg_cols]
@@ -181,6 +192,24 @@ def calc_elast_df(test, coeff_df, regr_tests_and_cols_dict, g_df):
 
 
 def backcast_df(df, r_df, test, y_col, x_cols, coeff_dict):
+    """
+    Performs a backcasting calculation based on provided dataframes and regression coefficients.
+    This function combines the target variable from `df` and feature variables from `r_df`,
+    applies coefficients from `coeff_dict` for a specific `test`, and calculates a
+    "Forecast y" based on an exponential model structure.
+    Args:
+        df (pd.DataFrame): DataFrame containing the actual target variable (`y_col`).
+        r_df (pd.DataFrame): DataFrame containing the feature variables (`x_cols`).
+        test (str): The key in `coeff_dict` corresponding to the set of coefficients to use.
+        y_col (str): The name of the target column in `df`.
+        x_cols (list): A list of column names for the feature variables in `r_df`.
+        coeff_dict (dict): A dictionary containing regression coefficients, structured
+                           like {test: {column_name: [coefficient, ...], ...}}.
+    Returns:
+        pd.DataFrame: A new DataFrame (`bc_df`) containing the original target variable,
+                      feature variables, applied coefficients, intermediate calculation
+                      ("y exp comp"), and the final "Forecast y".
+    """
 
     # print(df[y_col].head())
     # print(r_df[x_cols].head())

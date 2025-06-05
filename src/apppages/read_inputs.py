@@ -7,11 +7,14 @@ data in both table and chart formats.
 """
 
 import streamlit as st
+import plotly.express as px  # type: ignore
 from apppages.utils.excel import spreadsheet_to_df
-from apppages.utils.streamlit_tools import visualise_data, create_and_show_df, stringify, growth_df
-import plotly.express as px
-
-DEFAULT_FILE_PATH_FOR_TESTING = r"C:\Fidias\Coding-related\Python\Traffic-Regression-Tool\data\reg_input\Development Annual Traffic Data Regression Inputs.xlsx"
+from apppages.utils.streamlit_tools import (
+    visualise_data,
+    create_and_show_df,
+    stringify,
+    growth_df,
+)
 
 
 def main():
@@ -27,17 +30,6 @@ def main():
     )
     st.header("Upload a Completed Template:")
 
-    # input_file_path = st.text_input(
-    #     "Enter the full file path:",
-    #     value=st.session_state.inputs_file_path,
-    #     # value=DEFAULT_FILE_PATH_FOR_TESTING, # use this when testing
-    # )
-    # if input_file_path is not None:
-    #     try:
-    #         if input_file_path[0] == '"':
-    #             input_file_path = input_file_path.replace('"', '')
-    #     except IndexError:
-    #         pass
     input_file_path = st.file_uploader("Choose an Excel file", type=["xlsx", "xls"])
     if st.button("Read spreadsheet"):
         (
@@ -49,16 +41,16 @@ def main():
         st.session_state.prd = st.session_state.prd_dict[st.session_state.timestep]
         st.session_state.inputs_file_path = input_file_path
 
-
     if st.session_state.df is not None:
         st.header("Filter Timeline:")
+        slider_range = st.select_slider(
+            "Choose the range of points to be plotted",
+            options=range(0, len(st.session_state.df)),
+            value=(0, len(st.session_state.df) - 1),
+            format_func=stringify,
+        )
         st.session_state.slider_value_start, st.session_state.slider_value_end = (
-            st.select_slider(
-                "Choose the range of points to be plotted",
-                options=range(0, len(st.session_state.df)),
-                value=(0, len(st.session_state.df) - 1),
-                format_func=stringify,
-            )
+            slider_range
         )
 
         x_cols = [x for x in st.session_state.df.columns if x[0] == "x"]
@@ -109,6 +101,8 @@ def main():
 
     if st.button("Next Page"):
         st.switch_page("apppages/regression_ranking_refactored.py")
+
+
 def data_selection_buttons(
     slider_value_start: int,
     slider_value_end: int,
@@ -145,19 +139,17 @@ def data_selection_buttons(
         st.header("Charts")
         visualise_data(filt_df)
 
-
-
         st.subheader("Year on year chart")
 
         st.session_state.g_df, st.session_state.g_df_idx = growth_df(filt_df)
 
         # st.dataframe(st.session_state.g_df)
-        visualise_data(st.session_state.g_df,plot_indexed=False)
+        visualise_data(st.session_state.g_df, plot_indexed=False)
 
         st.subheader("Scatter matrix")
         # st.dataframe(filt_df)
 
-        cols_for_plot = [c for c in filt_df.columns if c[:2] != 'g:']
+        cols_for_plot = [c for c in filt_df.columns if c[:2] != "g:"]
         fig = px.scatter_matrix(filt_df[cols_for_plot])
         st.plotly_chart(fig)
 
