@@ -334,6 +334,8 @@ def main():
                 st.download_button(
                     label="Download Excel file",
                     data=input_template_buffer,
+                    type="primary",
+                    use_container_width=True,
                     file_name=f"{file_name}.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     key="download_template_btn",

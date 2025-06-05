@@ -30,22 +30,19 @@ def main():
           Here, you can load the completed template and visualise the data. This page is useful
           for exploring the data before running any regression analysis.
 
-        - **Page 3: Regression Ranking:**
-          On this page, you define parameters to automatically run and rank multiple regression models.
-          You can then review detailed statistics, compare models, and select the most suitable one
-          for your analysis.
-
-        - **Page 4: Model Evaluation:**
-          This page (currently integrated within "Regression Ranking" after model selection) allows
-          you to review the predictive power of the selected regression model against historical data.
+        - **Page 3: Regression Ranking & Evaluation:**
+          On this page, you define parameters to automatically run and rank
+          multiple regression models. You can then review detailed statistics, compare models,
+          and select the most suitable one for your analysis. This page then allows you to
+          review the predictive power of the selected regression model against historical data.
           You can also fine-tune the elasticities (coefficients) as needed and see the impact.
 
-        - **Page 5: Outputs:**
+        - **Page 4: Outputs:**
           Finally, this page lets you curate and export the outputs from the selected analysis,
           ready for use in further analysis or reporting.
 
-        Navigate through the pages using the sidebar to use the tool's functionalities and streamline
-        your traffic demand forecasting process.
+        Navigate through the pages using the sidebar to use the tool's functionalities
+        and streamline your forecasting process.
         """
     )
 
