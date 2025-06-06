@@ -30,16 +30,21 @@ def main():
     st.sidebar.success(
         "In this page, the user uploads the data for review before any calculation is performed"
     )
-    st.header("Upload a Completed Template:")
+    st.header("📤 Upload a Completed Template:")
 
     input_file_path = st.file_uploader("Choose an Excel file", type=["xlsx", "xls"])
     if st.button("Read spreadsheet", type="primary", use_container_width=True):
-        (
-            st.session_state.df,
-            st.session_state.df_index,
-            st.session_state.var_dict,
-        ) = spreadsheet_to_df(input_file_path)
-        st.session_state.inputs_file_path = input_file_path
+        try:
+            (
+                st.session_state.df,
+                st.session_state.df_index,
+                st.session_state.var_dict,
+            ) = spreadsheet_to_df(input_file_path)
+            st.session_state.inputs_file_path = input_file_path
+        except TypeError:
+            st.error(
+                "No file loaded or failed to read the file. Please upload a valid Excel file."
+            )
 
     if st.session_state.df is not None:
         st.session_state.timestep = st.selectbox(
@@ -55,10 +60,65 @@ def main():
                 ]
 
     if st.session_state.prd is not None:
-        st.header("Filter Data Visualisations:")
 
-        x_cols = [x for x in st.session_state.df.columns if x[0] == "x"]
-        y_cols = [y for y in st.session_state.df.columns if y[0] == "y"]
+        st.divider()
+
+        st.header("📝 Live Data Editor:")
+        st.info(
+            "Here you can make temporary changes to your data to see how they affect the charts. "
+            "These changes will carry over to the regression page unless you reset them."
+        )
+
+        if "active_df" not in st.session_state:
+            st.session_state.active_df = st.session_state.df
+
+        with st.expander("Data Editor"):
+
+            # The data editor widget, working on our active dataframe
+            edited_df = st.data_editor(
+                st.session_state.active_df,
+                num_rows="dynamic",
+                key=st.session_state.editor_key,
+            )
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if not edited_df.equals(st.session_state.active_df):
+                    if st.button(
+                        "Apply Edits", use_container_width=True, type="primary"
+                    ):
+                        st.session_state.active_df = edited_df
+                        st.session_state.edits_active = True
+                        st.success("Edits have been applied.")
+                        st.rerun()
+                    st.warning("You have unapplied changes.")
+
+            with col2:
+                if st.button("Reset to Original File Data", use_container_width=True):
+                    st.session_state.active_df = st.session_state.df
+                    st.session_state.edits_active = False
+
+                    current_key_index = int(st.session_state.editor_key.split("_")[-1])
+                    st.session_state.editor_key = f"editor_key_{current_key_index + 1}"
+
+                    st.info("Data has been reset to the original file.")
+                    st.rerun()
+
+        # Add a persistent warning message if edits are active
+        if st.session_state.edits_active:
+            st.warning(
+                "⚠️ **Viewing Modified Data:** The data shown below has been edited "
+                "and is different from the original uploaded file. "
+                "Go to the 'Live Data Editor' to reset.",
+                icon="❗",
+            )
+
+        st.divider()
+
+        st.header("🔎 Filter Data Visualisations:")
+
+        x_cols = [x for x in st.session_state.active_df.columns if x[0] == "x"]
+        y_cols = [y for y in st.session_state.active_df.columns if y[0] == "y"]
 
         if not st.session_state.y_sel_d or not st.session_state.x_sel_d:
             st.session_state.y_sel_d = y_cols
@@ -74,9 +134,9 @@ def main():
 
         slider_range = st.select_slider(
             "Choose the range of points to be plotted",
-            options=range(0, len(st.session_state.df)),
-            value=(0, len(st.session_state.df) - 1),
-            format_func=lambda i: stringify(st.session_state.df, i),
+            options=range(0, len(st.session_state.active_df)),
+            value=(0, len(st.session_state.active_df) - 1),
+            format_func=lambda i: stringify(st.session_state.active_df, i),
         )
         st.session_state.slider_value_start, st.session_state.slider_value_end = (
             slider_range
@@ -117,17 +177,19 @@ def main():
             index=0,  # Default to "All Selected"
         )
 
+        st.session_state.data_view = view_choice
+
         # Determine which variables to show based on the user's choice
         y_vars_to_show = []
         x_vars_to_show = []
 
-        if view_choice == "All Selected":
+        if st.session_state.data_view == "All Selected":
             y_vars_to_show = st.session_state.y_sel_d
             x_vars_to_show = st.session_state.x_sel_d
-        elif view_choice == "Dependent (Y) Only":
+        elif st.session_state.data_view == "Dependent (Y) Only":
             y_vars_to_show = st.session_state.y_sel_d
             x_vars_to_show = []
-        elif view_choice == "Independent (X) Only":
+        elif st.session_state.data_view == "Independent (X) Only":
             y_vars_to_show = []
             x_vars_to_show = st.session_state.x_sel_d
 
@@ -179,12 +241,12 @@ def render_visualizations(
             return  # Exit the function if nothing is selected
 
         # --- Standard Visualizations ---
-        st.header("Time Series Visualizations:")
+        st.header("📈 Time Series Visualizations:")
 
         # Create the filtered dataframe based on the current view
         st.subheader("Data Table")
         filt_df = create_and_show_df(
-            st.session_state.df,
+            st.session_state.active_df,
             slider_value_start,
             slider_value_end,
             x_sel,
@@ -237,7 +299,7 @@ def render_visualizations(
 
             # Create the full dataframe needed for this specific chart
             full_filt_df = create_and_show_df(
-                st.session_state.df,
+                st.session_state.active_df,
                 slider_value_start,
                 slider_value_end,
                 original_x_sel,

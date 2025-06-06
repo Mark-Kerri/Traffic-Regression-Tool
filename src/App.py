@@ -63,6 +63,9 @@ def initialise_session_state():
         "timestep": None,
         "prd_dict": {"Monthly": 12, "Quarterly": 4, "Yearly": 1},
         "prd": None,
+        "edits_active": False,  # Flag to indicate if edits are being made
+        "editor_key": "editor_key_0",  # Key for the editor component
+        "data_view": "",  # Current view of the data
         "y_sel": [],  # General Y selection
         "x_sel": [],  # General X selection
         "y_sel_d": [],  # Y selection for data exploration
