@@ -76,7 +76,7 @@ def main():
             "Choose the range of points to be plotted",
             options=range(0, len(st.session_state.df)),
             value=(0, len(st.session_state.df) - 1),
-            format_func=stringify,
+            format_func=lambda i: stringify(st.session_state.df, i),
         )
         st.session_state.slider_value_start, st.session_state.slider_value_end = (
             slider_range
@@ -106,11 +106,37 @@ def main():
                 st.session_state.x_sel_d = x_cols
                 st.rerun()
 
-        data_selection_buttons(
+        # Add a header to the sidebar for our new controls
+        st.sidebar.divider()
+        st.sidebar.header("Chart & Table View Options")
+
+        # The radio button to control the view
+        view_choice = st.sidebar.radio(
+            "Select a data view for the charts and tables:",
+            ["All Selected", "Dependent (Y) Only", "Independent (X) Only"],
+            index=0,  # Default to "All Selected"
+        )
+
+        # Determine which variables to show based on the user's choice
+        y_vars_to_show = []
+        x_vars_to_show = []
+
+        if view_choice == "All Selected":
+            y_vars_to_show = st.session_state.y_sel_d
+            x_vars_to_show = st.session_state.x_sel_d
+        elif view_choice == "Dependent (Y) Only":
+            y_vars_to_show = st.session_state.y_sel_d
+            x_vars_to_show = []
+        elif view_choice == "Independent (X) Only":
+            y_vars_to_show = []
+            x_vars_to_show = st.session_state.x_sel_d
+
+        # Call the (new) visualization function with the correctly filtered variable lists
+        render_visualizations(
             st.session_state.slider_value_start,
             st.session_state.slider_value_end,
-            st.session_state.x_sel_d,
-            st.session_state.y_sel_d,
+            x_vars_to_show,
+            y_vars_to_show,
             data_container,
         )
 
@@ -124,7 +150,10 @@ def main():
         st.switch_page("apppages/regression_ranking_refactored.py")
 
 
-def data_selection_buttons(
+# In read_inputs.py, replace your visualization function with this new version:
+
+
+def render_visualizations(
     slider_value_start: int,
     slider_value_end: int,
     x_sel: list,
@@ -132,23 +161,28 @@ def data_selection_buttons(
     container,
 ) -> None:
     """
-    Display selected data in a table and chart format.
-
-    This function filters the data based on the selected range and variables,
-    then displays it in a table and chart format within the specified Streamlit container.
+    Renders filtered data tables and charts within a Streamlit container
+    based on a view selected by the user.
 
     Args:
         slider_value_start (int): The start index for data filtering.
         slider_value_end (int): The end index for data filtering.
-        x_sel (list): List of selected independent variables.
-        y_sel (list): List of selected dependent variables.
-        container (st.container): Streamlit container to display the data and charts.
-
-    Returns:
-        None
+        x_sel (list): List of selected independent variables for the current view.
+        y_sel (list): List of selected dependent variables for the current view.
+        container (st.container): Streamlit container to display the visualizations.
     """
     with container:
-        st.header("Datatable")
+        if not y_sel and not x_sel:
+            st.warning(
+                "Please select at least one dependent or independent variable to view."
+            )
+            return  # Exit the function if nothing is selected
+
+        # --- Standard Visualizations ---
+        st.header("Time Series Visualizations:")
+
+        # Create the filtered dataframe based on the current view
+        st.subheader("Data Table")
         filt_df = create_and_show_df(
             st.session_state.df,
             slider_value_start,
@@ -157,94 +191,79 @@ def data_selection_buttons(
             y_sel,
         )
 
-        st.header("Charts")
-
-        st.subheader("Raw data chart")
+        st.subheader("Data Chart")
         visualise_data(filt_df)
 
-        st.subheader("Indexed data chart")
+        st.subheader("Indexed Data Chart (Base 100)")
         visualise_data_indexed(filt_df)
 
-        st.subheader("Year on year chart (dummy variables excluded)")
+        st.subheader("Year-on-Year Growth (Value-Type Variables)")
         st.session_state.g_df, st.session_state.g_df_idx = growth_df(filt_df)
         visualise_data(st.session_state.g_df, as_percent=True)
 
-        st.subheader("Correlation Heatmap (Numerical Variables)")
-        st.markdown(
-            "Use this heatmap to check for strong correlations between your numerical variables. "
-            "Values close to 1.0 (dark red) or -1.0 (dark blue) indicate a strong relationship."
-        )
+        # --- Correlation and Relationship Analysis ---
+        st.header("Variable Relationship Analysis")
 
-        # Get a list of the variable names from the filtered dataframe's columns
-        all_vars = filt_df.columns.tolist()
-
-        # Filter this list to only include variables defined as 'value' (i.e., numerical)
-        # We slice the column name (e.g., 'y:Sales'[2:]) to look it up in the var_dict
+        # --- Correlation Heatmap (only shown if there are numerical variables) ---
+        st.subheader("Correlation Heatmap")
         value_vars = [
-            var for var in all_vars if st.session_state.var_dict.get(var[2:]) == "value"
+            var
+            for var in filt_df.columns
+            if st.session_state.var_dict.get(var[2:]) == "value"
         ]
-
-        # Only attempt to create a correlation matrix if there are at least 2 numerical variables
         if len(value_vars) > 1:
             corr_matrix = filt_df[value_vars].corr().round(3)
-
-            # Create the heatmap using Plotly Express
             fig_heatmap = px.imshow(
                 corr_matrix,
-                text_auto=True,  # Automatically display the correlation values on the heatmap
+                text_auto=True,
                 aspect="auto",
-                color_continuous_scale="RdBu",  # A good color scale for correlations (-1 to 1)
-                title="Correlation Matrix",
+                color_continuous_scale="RdBu",
+                title="Correlation Matrix of Numerical Variables",
             )
             st.plotly_chart(fig_heatmap, use_container_width=True)
         else:
             st.info(
-                "At least two numerical (value-type) variables must be "
-                "selected to display a correlation heatmap."
+                "Select at least two numerical variables to display a correlation heatmap."
             )
 
-        st.subheader(
-            "Dependent Variable (Y) vs. Independent Variables (X) Relationships"
-        )
-        st.markdown(
-            "Select a dependent variable, then click on the tabs to see its relationship "
-            "with each independent variable."
-        )
+        # --- Y vs. X Relationship (only shown when BOTH Y and X are available) ---
+        # This uses the original, unfiltered selections to allow comparisons
+        original_y_sel = st.session_state.y_sel_d
+        original_x_sel = st.session_state.x_sel_d
 
-        # y_vars = [c for c in filt_df.columns if c.startswith('y:')]
-        # x_vars = [c for c in filt_df.columns if c.startswith('x:')]
+        if original_y_sel and original_x_sel:
+            st.divider()
+            st.header("Explore Dependent vs. Independent Relationships")
 
-        if y_sel and x_sel:
+            # Create the full dataframe needed for this specific chart
+            full_filt_df = create_and_show_df(
+                st.session_state.df,
+                slider_value_start,
+                slider_value_end,
+                original_x_sel,
+                original_y_sel,
+                display_df=False,
+            )
+
             selected_y_var = st.selectbox(
                 "Select a Dependent Variable:",
-                options=y_sel,
-                key="y_var_selector_for_tabs",  # Add a unique key
+                options=original_y_sel,
+                key="y_var_selector_for_tabs",
             )
 
             if selected_y_var:
-                # Create a clean list of X variable names for the tab titles
-                # e.g., "x: GDP" becomes "GDP"
-                clean_x_names = [x[2:] for x in x_sel]
-
-                # Create a tab for each independent variable
+                clean_x_names = [x[2:] for x in original_x_sel]
                 tabs = st.tabs(clean_x_names)
 
-                # Loop through each tab and its corresponding x_variable
-                for tab, x_var in zip(tabs, x_sel):
+                for tab, x_var in zip(tabs, original_x_sel):
                     with tab:
-                        # Create a simple scatter plot for the current tab
                         fig_scatter = px.scatter(
-                            filt_df,
+                            full_filt_df,
                             x=x_var,
                             y=selected_y_var,
                             title=f"Relationship between {selected_y_var[2:]} and {x_var[2:]}",
                         )
                         st.plotly_chart(fig_scatter, use_container_width=True)
-        else:
-            st.warning(
-                "Both dependent (Y) and independent (X) variables "
-                "must be selected to display these charts."
-            )
 
 
 if __name__ == "__page__":

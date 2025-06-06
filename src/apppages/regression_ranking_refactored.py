@@ -14,10 +14,17 @@ from statsmodels.stats.stattools import durbin_watson
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.stats.outliers_influence import OLSInfluence
 import plotly.express as px
-from apppages.utils.streamlit_tools import stringify, log_df, create_and_show_df, stringify_l_df, backcast_df
+from apppages.utils.streamlit_tools import (
+    stringify,
+    log_df,
+    create_and_show_df,
+    stringify_l_df,
+    backcast_df,
+)
 import os
 import math
 import numpy as np
+
 
 def main():
     """
@@ -44,11 +51,15 @@ def main():
     if st.session_state.df is not None:
         # Load or create growth dataframe if not already available
         if st.session_state.log_df is None:
-            st.session_state.log_df,st.session_state.l_df_idx = log_df(st.session_state.df)
+            st.session_state.log_df, st.session_state.l_df_idx = log_df(
+                st.session_state.df
+            )
 
         # Extract independent (x) and dependent (y) variables from the growth dataframe
         st.header("Define Regression Parameters:")
-        st.session_state.x_sel_l = [x for x in st.session_state.log_df.columns if x[3] == "x"]
+        st.session_state.x_sel_l = [
+            x for x in st.session_state.log_df.columns if x[3] == "x"
+        ]
         y_cols = [y for y in st.session_state.log_df.columns if y[3] == "y"]
 
         # User selects the dependent (y) variable
@@ -65,26 +76,40 @@ def main():
                 "Choose the range of points to be used",
                 options=range(0, len(st.session_state.log_df)),
                 value=(0, len(st.session_state.log_df) - 1),
-                format_func=stringify_l_df,
+                format_func=lambda i: stringify(st.session_state.log_df, i),
             )
         )
 
         with st.expander("Advanced filters"):
-            st.subheader('Disable variable combinations')
-            st.markdown('Set the variable pairs to zero in the matrix below so that those pairs are not used as part of a regerssion model at the same time:')
+            st.subheader("Disable variable combinations")
+            st.markdown(
+                "Set the variable pairs to zero in the matrix below so that those pairs are not used as part of a regerssion model at the same time:"
+            )
             # st.text(st.session_state.x_sel_l)
-            x_interaction_table_full = pd.DataFrame(data = 1,index = st.session_state.x_sel_l, columns = st.session_state.x_sel_l)
+            x_interaction_table_full = pd.DataFrame(
+                data=1, index=st.session_state.x_sel_l, columns=st.session_state.x_sel_l
+            )
             bool_matrix = np.triu(np.ones(x_interaction_table_full.shape)).astype(bool)
             x_interaction_table = x_interaction_table_full.where(bool_matrix)
-            st.session_state.x_interaction_table = st.data_editor(x_interaction_table, num_rows="dynamic")
+            st.session_state.x_interaction_table = st.data_editor(
+                x_interaction_table, num_rows="dynamic"
+            )
 
-            st.session_state.x_inter_stack = st.session_state.x_interaction_table.stack().reset_index()
-            st.session_state.x_inter_stack.columns = ['X_1','X_2','Value']
-            st.session_state.x_inter_stack = st.session_state.x_inter_stack[st.session_state.x_inter_stack['Value'] == 0]
-            st.session_state.x_combos_to_exclude = list(st.session_state.x_inter_stack[['X_1','X_2']].values)
+            st.session_state.x_inter_stack = (
+                st.session_state.x_interaction_table.stack().reset_index()
+            )
+            st.session_state.x_inter_stack.columns = ["X_1", "X_2", "Value"]
+            st.session_state.x_inter_stack = st.session_state.x_inter_stack[
+                st.session_state.x_inter_stack["Value"] == 0
+            ]
+            st.session_state.x_combos_to_exclude = list(
+                st.session_state.x_inter_stack[["X_1", "X_2"]].values
+            )
             # if st.session_state.n_counter > 0:
-            st.subheader('Parameter filtering')
-            st.markdown('After all regressions are run and a regression is selected , the user can apply filters on the range of the regression parameters')
+            st.subheader("Parameter filtering")
+            st.markdown(
+                "After all regressions are run and a regression is selected , the user can apply filters on the range of the regression parameters"
+            )
             # there is a minor bug, as
             # "st.session_state.regressions_min_max_df" and
             # "st.session_state.model_regressions_df" are None/empty even after clicking run all regressions button
@@ -95,27 +120,46 @@ def main():
                 # if st.button('Display min/max'):
                 #     print(st.session_state.model_regressions_df)
 
-                parameter_filters = pd.DataFrame(data=st.session_state.regressions_min_max_df.T)#, columns = ['Min','Max'])#,index = st.session_state.x_sel_l + ['r_squared'])
-                parameter_filters.columns = ['Min','Max']
-                st.session_state.parameter_filters = st.data_editor(parameter_filters, num_rows="fixed")
+                parameter_filters = pd.DataFrame(
+                    data=st.session_state.regressions_min_max_df.T
+                )  # , columns = ['Min','Max'])#,index = st.session_state.x_sel_l + ['r_squared'])
+                parameter_filters.columns = ["Min", "Max"]
+                st.session_state.parameter_filters = st.data_editor(
+                    parameter_filters, num_rows="fixed"
+                )
                 st.session_state.param_t = st.session_state.parameter_filters.T
 
-                if st.button('Apply filters'):
-                    st.session_state.model_regressions_filtered = st.session_state.model_regressions_df
-                    st.session_state.model_regressions_df = st.session_state.model_regressions_df.astype(
-                        float)
+                if st.button("Apply filters"):
+                    st.session_state.model_regressions_filtered = (
+                        st.session_state.model_regressions_df
+                    )
+                    st.session_state.model_regressions_df = (
+                        st.session_state.model_regressions_df.astype(float)
+                    )
 
                     for col in st.session_state.param_t:
                         # print(st.session_state.regressions_min_max_df.T)
                         # print(float(param_t.loc['Min',col]))
                         # print(len(st.session_state.model_regressions_df[col]))
-                        st.session_state.model_regressions_filtered[col] = st.session_state.model_regressions_df[
-                            (st.session_state.model_regressions_df[col] >= float(st.session_state.param_t.loc['Min', col])) &
-                            (st.session_state.model_regressions_df[col] <= float(st.session_state.param_t.loc['Max', col]))
+                        st.session_state.model_regressions_filtered[col] = (
+                            st.session_state.model_regressions_df[
+                                (
+                                    st.session_state.model_regressions_df[col]
+                                    >= float(st.session_state.param_t.loc["Min", col])
+                                )
+                                & (
+                                    st.session_state.model_regressions_df[col]
+                                    <= float(st.session_state.param_t.loc["Max", col])
+                                )
                             ][col]
+                        )
 
-                        if st.session_state.param_t.loc['Min', col] != st.session_state.regressions_min_max_df.T.loc[col, 0] or \
-                                st.session_state.param_t.loc['Max', col] != st.session_state.regressions_min_max_df.T.loc[col, 1]:
+                        if (
+                            st.session_state.param_t.loc["Min", col]
+                            != st.session_state.regressions_min_max_df.T.loc[col, 0]
+                            or st.session_state.param_t.loc["Max", col]
+                            != st.session_state.regressions_min_max_df.T.loc[col, 1]
+                        ):
 
                             st.session_state.model_regressions_filtered = st.session_state.model_regressions_filtered[
                                 st.session_state.model_regressions_filtered[col].notna()
@@ -146,12 +190,14 @@ def main():
             st.session_state.model_regressions_df["Test id"] = None
 
             for var in st.session_state.x_sel_l:
-                st.session_state.model_regressions_df[var + ' t-val'] = None
+                st.session_state.model_regressions_df[var + " t-val"] = None
 
             # Try to fit a linear regression model and display the results
             st.session_state.n_counter = 0
             for x_elements in range(len(st.session_state.x_sel_l)):
-                x_combinations = list(itertools.combinations(st.session_state.x_sel_l, x_elements))
+                x_combinations = list(
+                    itertools.combinations(st.session_state.x_sel_l, x_elements)
+                )
                 for i, x_combo in enumerate(x_combinations):
                     exclude = False
                     for pair in st.session_state.x_combos_to_exclude:
@@ -169,14 +215,16 @@ def main():
                             ):
                                 if st.session_state.r_df is not None:
                                     y = st.session_state.r_df[st.session_state.y_sel_l][
-                                        st.session_state.slider_value_start : st.session_state.slider_value_end +1
+                                        st.session_state.slider_value_start : st.session_state.slider_value_end
+                                        + 1
                                     ]
                                     if st.session_state.constant_sel == True:
                                         x = st.session_state.r_df[
                                             st.session_state.x_sel_reg
                                         ][
                                             st.session_state.slider_value_start : st.session_state.slider_value_end
-                                        +1]
+                                            + 1
+                                        ]
                                         x = sm.add_constant(
                                             x, prepend=False, has_constant="add"
                                         )
@@ -193,7 +241,6 @@ def main():
                                     st.session_state.reg_influence = model
                                     # st.write(influence.results)
                                     st.session_state.model_params = dict(model.params)
-
 
                                     test_name_list = [
                                         item.split("x:")[1]
@@ -219,16 +266,17 @@ def main():
                                     ]
 
                                     t_vals = model.tvalues
-                                    t_vals.index = [i + ' t-val' for i in t_vals.index]
+                                    t_vals.index = [i + " t-val" for i in t_vals.index]
                                     t_vals = t_vals.rename(test_name)
                                     # st.text(type(t_vals))
                                     filtered_dicts[0]["r_squared"] = model.rsquared_adj
                                     filtered_dicts[0]["Test name"] = test_name
-                                    filtered_dicts[0]["Test id"] = st.session_state.n_counter
+                                    filtered_dicts[0][
+                                        "Test id"
+                                    ] = st.session_state.n_counter
 
                                     for i in t_vals.index:
                                         filtered_dicts[0][i] = t_vals[i]
-
 
                                     # Append the row
                                     st.session_state.model_regressions_df = pd.concat(
@@ -241,40 +289,42 @@ def main():
                                         ]
                                     )
 
-
                                     vif_data = pd.DataFrame()
                                     try:
                                         vif_data["Variable"] = x.columns
 
                                         # Calculate VIF for each column
-                                        vif_data["VIF"] = [variance_inflation_factor(x.values, i) for i in
-                                                           range(x.shape[1])]
+                                        vif_data["VIF"] = [
+                                            variance_inflation_factor(x.values, i)
+                                            for i in range(x.shape[1])
+                                        ]
                                     except ValueError:
                                         pass
 
-                                    #TODO: create a df which includes both x coefficients with t stats so that users can filter based on tstats
-
+                                    # TODO: create a df which includes both x coefficients with t stats so that users can filter based on tstats
 
                                     st.session_state.regression_outputs[test_name] = {
-                                        'model summary':
-                                            model.summary(),
-                                        'durbin watson': durbin_watson(model.resid),
-                                        'log likelihood': model.llf,
-                                        't stats': t_vals,
-                                        'vif': vif_data
+                                        "model summary": model.summary(),
+                                        "durbin watson": durbin_watson(model.resid),
+                                        "log likelihood": model.llf,
+                                        "t stats": t_vals,
+                                        "vif": vif_data,
                                     }
-                                    st.session_state.regr_tests_and_cols_dict[test_name] = (
-                                        st.session_state.x_sel_reg
+                                    st.session_state.regr_tests_and_cols_dict[
+                                        test_name
+                                    ] = st.session_state.x_sel_reg
+                                    st.session_state.reg_residuals[test_name] = (
+                                        model.resid
                                     )
-                                    st.session_state.reg_residuals[test_name] = model.resid
-                                    st.session_state.reg_fitted_vals[test_name] = model.fittedvalues
+                                    st.session_state.reg_fitted_vals[test_name] = (
+                                        model.fittedvalues
+                                    )
                                     st.session_state.n_counter += 1
 
                         except ValueError:
                             st.error(
                                 "Please make sure you chose at least one independent (x) variable."
                             )
-
 
         # if st.session_state.model_regressions_df is not None:
         if st.session_state.r_df is not None:
@@ -296,24 +346,38 @@ def main():
             # extract min/max in order to apply filtering
             regression_min = st.session_state.model_regressions_df.min()
             regressions_max = st.session_state.model_regressions_df.max()
-            st.session_state.regressions_min_max_df = pd.DataFrame([regression_min,regressions_max])
+            st.session_state.regressions_min_max_df = pd.DataFrame(
+                [regression_min, regressions_max]
+            )
             with st.expander("Regression outputs"):
                 # after test filtering is applied
                 if st.session_state.model_regressions_filtered is None:
                     st.session_state.selected_regression = st.dataframe(
-                        st.session_state.model_regressions_df[[col for col in st.session_state.model_regressions_df.columns if "t-val" not in col]]
-                        , on_select="rerun"
+                        st.session_state.model_regressions_df[
+                            [
+                                col
+                                for col in st.session_state.model_regressions_df.columns
+                                if "t-val" not in col
+                            ]
+                        ],
+                        on_select="rerun",
                     )
                 # before any filtering is applied on any of the columns
                 else:
                     st.session_state.selected_regression = st.dataframe(
-                        st.session_state.model_regressions_filtered[[col for col in st.session_state.model_regressions_filtered.columns if "t-val" not in col]]
-                        , on_select="rerun"
+                        st.session_state.model_regressions_filtered[
+                            [
+                                col
+                                for col in st.session_state.model_regressions_filtered.columns
+                                if "t-val" not in col
+                            ]
+                        ],
+                        on_select="rerun",
                     )
                 # print(st.session_state.selected_regression.selection.rows)
                 # print(type(st.session_state.selected_regression))
                 # print(len(st.session_state.selected_regression.selection.rows))
-            if len(st.session_state.selected_regression.selection.rows)>0:
+            if len(st.session_state.selected_regression.selection.rows) > 0:
                 st.session_state.reg_sel = st.text_input(
                     "Select a test from the table above:",
                     value=st.session_state.model_regressions_df.iloc[
@@ -326,37 +390,55 @@ def main():
 
         if st.session_state.reg_sel:
             with st.expander("Regression summary table"):
-                st.text(st.session_state.regression_outputs[st.session_state.reg_sel]['model summary'])
+                st.text(
+                    st.session_state.regression_outputs[st.session_state.reg_sel][
+                        "model summary"
+                    ]
+                )
             with st.expander("Regression further outputs"):
-                st.text('Variance Inflation Factor')
-                st.dataframe(st.session_state.regression_outputs[st.session_state.reg_sel]['vif'])
+                st.text("Variance Inflation Factor")
+                st.dataframe(
+                    st.session_state.regression_outputs[st.session_state.reg_sel]["vif"]
+                )
 
-                st.text('Regression residuals and fitted values')
+                st.text("Regression residuals and fitted values")
 
-                st.session_state.residuals_df = pd.DataFrame()#,index=st.session_state.r_df.index)
-                st.session_state.residuals_df['Residuals'] = st.session_state.reg_residuals[st.session_state.reg_sel]
-                st.session_state.residuals_df['Fitted values'] = st.session_state.reg_fitted_vals[st.session_state.reg_sel]
-                st.session_state.residuals_df['Actuals'] = st.session_state.residuals_df['Residuals']  + st.session_state.residuals_df['Fitted values']
+                st.session_state.residuals_df = (
+                    pd.DataFrame()
+                )  # ,index=st.session_state.r_df.index)
+                st.session_state.residuals_df["Residuals"] = (
+                    st.session_state.reg_residuals[st.session_state.reg_sel]
+                )
+                st.session_state.residuals_df["Fitted values"] = (
+                    st.session_state.reg_fitted_vals[st.session_state.reg_sel]
+                )
+                st.session_state.residuals_df["Actuals"] = (
+                    st.session_state.residuals_df["Residuals"]
+                    + st.session_state.residuals_df["Fitted values"]
+                )
 
-                if st.button('Display residuals data'):
+                if st.button("Display residuals data"):
                     st.dataframe(st.session_state.residuals_df)
 
-                columns = st.multiselect("Columns:", st.session_state.residuals_df.columns)
+                columns = st.multiselect(
+                    "Columns:", st.session_state.residuals_df.columns
+                )
                 st.scatter_chart(data=st.session_state.residuals_df[columns])
 
         # use the test name entered above to find the parameters from the equivalent test
         # create a list of test to loop through and calculate all forecasts from
         if st.session_state.model_regressions_df is not None:
-            st.session_state.test_list = st.session_state.model_regressions_df.index.to_list()
+            st.session_state.test_list = (
+                st.session_state.model_regressions_df.index.to_list()
+            )
             # for test_name in st.session_state.test_list:
-                # st.session_state.test_names_and_ids[test_name] = st.session_state.model_regressions_df.loc[test_name,'Test id']
+            # st.session_state.test_names_and_ids[test_name] = st.session_state.model_regressions_df.loc[test_name,'Test id']
             # for test_id in st.session_state.test_names_and_ids:
-                # st.session_state.test_list
+            # st.session_state.test_list
             try:
                 st.session_state.y_sel = st.session_state.y_sel_l.split("l: ")[1]
             except IndexError:
                 pass
-
 
             for test in st.session_state.test_list:
                 if st.session_state.model_regressions_df is not None:
@@ -367,17 +449,18 @@ def main():
                         st.session_state.coeff_dict[test] = st.session_state.coeff_df
                     except KeyError:
                         st.write("")
-                if (test is not None and st.session_state.regr_tests_and_cols_dict != {}):
-                    #TODO: Convert the following into a function - calc_elast_df
-
-
+                if test is not None and st.session_state.regr_tests_and_cols_dict != {}:
+                    # TODO: Convert the following into a function - calc_elast_df
 
                     # print(st.session_state.test_names_and_ids[test_id])
-                    st.session_state.bc_plot_df = backcast_df(st.session_state.df,st.session_state.r_df,test,
-                                                              st.session_state.y_sel_l[3:],
-                                                              st.session_state.regr_tests_and_cols_dict[test],
-                                                              st.session_state.coeff_dict
-                                                              )
+                    st.session_state.bc_plot_df = backcast_df(
+                        st.session_state.df,
+                        st.session_state.r_df,
+                        test,
+                        st.session_state.y_sel_l[3:],
+                        st.session_state.regr_tests_and_cols_dict[test],
+                        st.session_state.coeff_dict,
+                    )
                     # print(st.session_state.bc_plot_df)
                     # st.session_state.elast_dict[test] = elast_df
 
@@ -385,81 +468,110 @@ def main():
 
             if st.session_state.reg_sel is not None:
                 st.subheader("Regression coefficients for selected test")
-                st.session_state.coeff_df = st.data_editor(st.session_state.coeff_dict[st.session_state.reg_sel], num_rows="dynamic")
+                st.session_state.coeff_df = st.data_editor(
+                    st.session_state.coeff_dict[st.session_state.reg_sel],
+                    num_rows="dynamic",
+                )
 
-
-
-
-            # update backcast
+                # update backcast
                 try:
-                    st.session_state.coeff_dict[st.session_state.reg_sel] = st.session_state.coeff_df
+                    st.session_state.coeff_dict[st.session_state.reg_sel] = (
+                        st.session_state.coeff_df
+                    )
                 except KeyError:
                     st.write("")
-                if (st.session_state.reg_sel is not None and st.session_state.regr_tests_and_cols_dict != {}):
-                    st.session_state.bc_plot_df = backcast_df(st.session_state.df,st.session_state.r_df,st.session_state.reg_sel,
-                                                              st.session_state.y_sel_l[3:],
-                                                              st.session_state.regr_tests_and_cols_dict[st.session_state.reg_sel],
-                                                              st.session_state.coeff_dict
-                                                              )
+                if (
+                    st.session_state.reg_sel is not None
+                    and st.session_state.regr_tests_and_cols_dict != {}
+                ):
+                    st.session_state.bc_plot_df = backcast_df(
+                        st.session_state.df,
+                        st.session_state.r_df,
+                        st.session_state.reg_sel,
+                        st.session_state.y_sel_l[3:],
+                        st.session_state.regr_tests_and_cols_dict[
+                            st.session_state.reg_sel
+                        ],
+                        st.session_state.coeff_dict,
+                    )
                     # print(st.session_state.bc_plot_df)
                     # st.session_state.elast_dict[test] = elast_df
 
-                    st.session_state.bc_dict[st.session_state.reg_sel] = st.session_state.bc_plot_df
-
-
-
-
-
+                    st.session_state.bc_dict[st.session_state.reg_sel] = (
+                        st.session_state.bc_plot_df
+                    )
 
                 # st.session_state.coeff_dict[st.session_state.reg_sel] = coeff_df
-                #TODO: run a function here that updates bc_df
-                st.subheader('Derived equation from current regression test')
-                with st.expander('Show regression equation'):
-                    st.latex(fr'''
+                # TODO: run a function here that updates bc_df
+                st.subheader("Derived equation from current regression test")
+                with st.expander("Show regression equation"):
+                    st.latex(
+                        rf"""
                                     \ln(\text Traffic_t) = {st.session_state.coeff_df['const'][0]:.2f}  + \epsilon_t
-                                    ''')
+                                    """
+                    )
                     for col in st.session_state.coeff_df.columns[:-2]:
-                        if st.session_state.coeff_df[col][0]>0:
-                            st.latex(rf'+ {st.session_state.coeff_df[col][0]:.2f}\;ln({col[5:]}_t)')
+                        if st.session_state.coeff_df[col][0] > 0:
+                            st.latex(
+                                rf"+ {st.session_state.coeff_df[col][0]:.2f}\;ln({col[5:]}_t)"
+                            )
                             # st.latex(type(col))
-                        elif st.session_state.coeff_df[col][0]<0:
-                            st.latex(rf'{st.session_state.coeff_df[col][0]:.2f}\;ln({col[5:]}_t)')
+                        elif st.session_state.coeff_df[col][0] < 0:
+                            st.latex(
+                                rf"{st.session_state.coeff_df[col][0]:.2f}\;ln({col[5:]}_t)"
+                            )
                         else:
                             pass
-                with st.expander('Show equation solved for traffic'):
-                    st.latex(fr'''
-                                                    Traffic_t = e^{{{st.session_state.coeff_df['const'][0]:.2f} + \epsilon_t}} 
-                                                    ''')
+                with st.expander("Show equation solved for traffic"):
+                    st.latex(
+                        rf"""
+                                                    Traffic_t = e^{{{st.session_state.coeff_df['const'][0]:.2f} + \epsilon_t}}
+                                                    """
+                    )
                     for col in st.session_state.coeff_df.columns[:-2]:
                         if math.isnan(st.session_state.coeff_df[col][0]):
                             pass
                         else:
-                            st.latex(rf'\cdot({col[5:]}_t)^{{{st.session_state.coeff_df[col][0]:.2f}}}')
+                            st.latex(
+                                rf"\cdot({col[5:]}_t)^{{{st.session_state.coeff_df[col][0]:.2f}}}"
+                            )
 
                 st.header("Backcast:")
-                st.session_state.bc_plot_df = st.session_state.bc_dict[st.session_state.reg_sel]
-                st.session_state.bc_plot_df = st.session_state.bc_plot_df[['Forecast y', st.session_state.y_sel_l[3:]]]
+                st.session_state.bc_plot_df = st.session_state.bc_dict[
+                    st.session_state.reg_sel
+                ]
+                st.session_state.bc_plot_df = st.session_state.bc_plot_df[
+                    ["Forecast y", st.session_state.y_sel_l[3:]]
+                ]
                 fig = px.line(
                     st.session_state.bc_plot_df,
                     x=st.session_state.bc_plot_df.index,
                     y=st.session_state.bc_plot_df.columns,
                     title=f"Forecast on historic data of {st.session_state.y_sel}",
-                    color_discrete_sequence=st.session_state.custom_colors
+                    color_discrete_sequence=st.session_state.custom_colors,
                 )
                 fig.update_layout(xaxis_title="Year", yaxis_title="Variable")
                 st.plotly_chart(fig)
-                with st.expander('Display underlying data'):
+                with st.expander("Display underlying data"):
                     st.dataframe(st.session_state.bc_dict[st.session_state.reg_sel])
 
                 if st.button("Export forecast as html"):
-                    fig.write_html(os.path.join(st.session_state.output_path,f"Forecast of {st.session_state.y_sel[2:]} "
-                                                                         f"({st.session_state.bc_plot_df.index[0]} "
-                                                                         f"-{st.session_state.bc_plot_df.index[-1]}).html")
-                               ) # Save as HTML
-                st.text('Durbin Watson')
-                st.session_state.regression_outputs[st.session_state.reg_sel]['durbin watson']
-                st.text('Log likelihood')
-                st.session_state.regression_outputs[st.session_state.reg_sel]['log likelihood']
+                    fig.write_html(
+                        os.path.join(
+                            st.session_state.output_path,
+                            f"Forecast of {st.session_state.y_sel[2:]} "
+                            f"({st.session_state.bc_plot_df.index[0]} "
+                            f"-{st.session_state.bc_plot_df.index[-1]}).html",
+                        )
+                    )  # Save as HTML
+                st.text("Durbin Watson")
+                st.session_state.regression_outputs[st.session_state.reg_sel][
+                    "durbin watson"
+                ]
+                st.text("Log likelihood")
+                st.session_state.regression_outputs[st.session_state.reg_sel][
+                    "log likelihood"
+                ]
     else:
         st.subheader(
             'Please load traffic data using the "Data exploration" page before navigating back to this page.'

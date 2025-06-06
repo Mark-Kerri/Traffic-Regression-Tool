@@ -11,17 +11,18 @@ import streamlit as st
 import plotly.express as px  # type: ignore
 
 
-def stringify(i: int = 0) -> str:
+def stringify(state_df: pd.DataFrame, i: int = 0) -> str:
     """
-    Convert a slider integer index to a corresponding dataframe index string.
+    Convert a slider integer index to the corresponding index label of a DataFrame.
 
     Parameters:
-    i (int): The index value from the slider, default is 0.
+    state_df (pd.DataFrame): The DataFrame whose index labels are used.
+    i (int): The integer index from the slider, default is 0.
 
     Returns:
-    str: The corresponding index string from the dataframe.
+    str: The index label from the DataFrame at position i, converted to string.
     """
-    return st.session_state.df_index[i]
+    return str(state_df.index[i])
 
 
 def create_and_show_df(
@@ -126,7 +127,7 @@ def visualise_data_indexed(df):
         "Choose the base point of the index",
         options=range(0, len(df.index)),
         value=0,
-        format_func=stringify,
+        format_func=lambda i: stringify(df, i),
     )
     st.session_state.index_slider_value_point = index_point
 
