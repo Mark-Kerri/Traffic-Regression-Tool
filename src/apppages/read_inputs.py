@@ -169,10 +169,82 @@ def data_selection_buttons(
         st.session_state.g_df, st.session_state.g_df_idx = growth_df(filt_df)
         visualise_data(st.session_state.g_df, as_percent=True)
 
-        st.subheader("Scatter matrix")
-        cols_for_plot = [c for c in filt_df.columns if c[:2] != "g:"]
-        fig = px.scatter_matrix(filt_df[cols_for_plot])
-        st.plotly_chart(fig)
+        st.subheader("Correlation Heatmap (Numerical Variables)")
+        st.markdown(
+            "Use this heatmap to check for strong correlations between your numerical variables. "
+            "Values close to 1.0 (dark red) or -1.0 (dark blue) indicate a strong relationship."
+        )
+
+        # Get a list of the variable names from the filtered dataframe's columns
+        all_vars = filt_df.columns.tolist()
+
+        # Filter this list to only include variables defined as 'value' (i.e., numerical)
+        # We slice the column name (e.g., 'y:Sales'[2:]) to look it up in the var_dict
+        value_vars = [
+            var for var in all_vars if st.session_state.var_dict.get(var[2:]) == "value"
+        ]
+
+        # Only attempt to create a correlation matrix if there are at least 2 numerical variables
+        if len(value_vars) > 1:
+            corr_matrix = filt_df[value_vars].corr().round(3)
+
+            # Create the heatmap using Plotly Express
+            fig_heatmap = px.imshow(
+                corr_matrix,
+                text_auto=True,  # Automatically display the correlation values on the heatmap
+                aspect="auto",
+                color_continuous_scale="RdBu",  # A good color scale for correlations (-1 to 1)
+                title="Correlation Matrix",
+            )
+            st.plotly_chart(fig_heatmap, use_container_width=True)
+        else:
+            st.info(
+                "At least two numerical (value-type) variables must be "
+                "selected to display a correlation heatmap."
+            )
+
+        st.subheader(
+            "Dependent Variable (Y) vs. Independent Variables (X) Relationships"
+        )
+        st.markdown(
+            "Select a dependent variable, then click on the tabs to see its relationship "
+            "with each independent variable."
+        )
+
+        # y_vars = [c for c in filt_df.columns if c.startswith('y:')]
+        # x_vars = [c for c in filt_df.columns if c.startswith('x:')]
+
+        if y_sel and x_sel:
+            selected_y_var = st.selectbox(
+                "Select a Dependent Variable:",
+                options=y_sel,
+                key="y_var_selector_for_tabs",  # Add a unique key
+            )
+
+            if selected_y_var:
+                # Create a clean list of X variable names for the tab titles
+                # e.g., "x: GDP" becomes "GDP"
+                clean_x_names = [x[2:] for x in x_sel]
+
+                # Create a tab for each independent variable
+                tabs = st.tabs(clean_x_names)
+
+                # Loop through each tab and its corresponding x_variable
+                for tab, x_var in zip(tabs, x_sel):
+                    with tab:
+                        # Create a simple scatter plot for the current tab
+                        fig_scatter = px.scatter(
+                            filt_df,
+                            x=x_var,
+                            y=selected_y_var,
+                            title=f"Relationship between {selected_y_var[2:]} and {x_var[2:]}",
+                        )
+                        st.plotly_chart(fig_scatter, use_container_width=True)
+        else:
+            st.warning(
+                "Both dependent (Y) and independent (X) variables "
+                "must be selected to display these charts."
+            )
 
 
 if __name__ == "__page__":
